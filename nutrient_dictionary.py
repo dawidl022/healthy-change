@@ -1,7 +1,8 @@
 nutrients = {"Fat": "Tłuscz",
-             "Saturated": "W tym Nasycone KT",
-             "Monounsaturated": "W tym Jedno-nienasycone KT",
-             "Polyunsaturated": "W tym Wielo-nienasycone KT",
+             "Saturated": "Nasycone Kwasy Tłuszczowe",
+             "Trans": "Tłuszcze Trans",
+             "Monounsaturated": "Jedno-nienasycone KT",
+             "Polyunsaturated": "Wielo-nienasycone KT",
              "Carbs": "Węglowodany",
              "Fiber": "Błonnik",
              "Sugars": "Cukry",
@@ -29,4 +30,4 @@ nutrients = {"Fat": "Tłuscz",
              "Vitamin K": "Witamina A",
              "Water": "Woda"}
 
-default_nutrients = ['Tłuscz', 'W tym Nasycone KT', 'W tym Jedno-nienasycone KT', 'W tym Wielo-nienasycone KT', 'Węglowodany', 'Błonnik', 'Cukry', 'Białko']
+default_nutrients = ['Tłuscz', 'Nasycone Kwasy Tłuszczowe', "Tłuszcze Trans", 'Jedno-nienasycone KT', 'Wielo-nienasycone KT', 'Węglowodany', 'Błonnik', 'Cukry', 'Białko']

@@ -17,12 +17,14 @@ from kivy.uix.screenmanager import Screen, ScreenManager
 
 from os import path
 from webbrowser import open as browser_open
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import quote
+import json
 
 import config
 import nutrient_dictionary
 import messages
+
 from ibm_watson.language_translator_v3 import LanguageTranslatorV3
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 
@@ -36,36 +38,38 @@ language_translator.set_service_url(f'{config.ibm_api["url"]}')
 
 require("2.0.0")
 
-
 def get_current_time():
     return str(datetime.now()).split()[1][:5]
 
 
 class UserProfile:
     def __init__(self, **kwargs):
-        self.goal = None
-        self.diet = None
-        self.first_day = None  # TODO implement this
-        self.setup_complete = False
-        self.day = 1
-        self.activities_today = []
-        self.kcal = 0
-        self.message = None
-        self.hunger_marks = []
-        self.displayed_nutrients = nutrient_dictionary.default_nutrients
-        self.nutrients_today = dict()
+        self.goal = kwargs.get("goal", None)
+        self.diet = kwargs.get("diet", None)
+        self.first_day = kwargs.get("first_day", None)
+        self.current_day = kwargs.get("current_day", None)
+        self.setup_complete = kwargs.get("setup_complete", False)
+        self.activities_today = kwargs.get("activities_today", [])
+        self.hunger_marks = kwargs.get("hunger_marks", [])
+        self.kcal = kwargs.get("kcal", 0)
+        self.message = kwargs.get("message", None)
+        self.hunger_marks = kwargs.get("hunger_marks", [])
+        self.displayed_nutrients = kwargs.get("displayed_nutrients", nutrient_dictionary.default_nutrients)
+        self.nutrients_today = kwargs.get("nutrients_today", dict())
 
-        self.sex = None
-        self.mass = None
-        self.height = None
-        self.age = None
-        self.bmi = None
-        self.bmi_color = (0, 1, 0, .5)
-        Clock.schedule_interval(self.auto_save_user_info, 1)
+        self.sex = kwargs.get("sex", None)
+        self.mass = kwargs.get("mass", None)
+        self.height = kwargs.get("height", None)
+        self.age = kwargs.get("age", None)
+        self.bmi = kwargs.get("bmi", None)
+        self.bmi_color = kwargs.get("bmi_color", (0, 1, 0, .5))
+        Clock.schedule_interval(self.auto_save_user_info, 2)
 
-    def auto_save_user_info(self, dt):
-        with open("user.txt", "w") as save_file:
-            print(self.__dict__, file=save_file)
+    def auto_save_user_info(self, td):
+        self.current_day = (datetime.now() - datetime.strptime(self.first_day, "%Y-%m-%d")).days + 1 if self.first_day else None
+        with open("user.json", "w") as save_file:
+            output_json = json.dumps(self.__dict__, indent=4)
+            save_file.write(output_json)
 
     def add_meal(self, meal, calories):
         self.activities_today.append(f"{get_current_time()} Posiłek: {meal} +{calories}kcal")
@@ -80,10 +84,10 @@ class UserProfile:
         print("Adding..")
         duration_hours = duration // 60
         duration_minutes = duration % 60
-        # if duration_hours < 1: TODO
+        # if duration_hours < 1: TODO przeliczyć na godziny i minuty, dodać 2 okna, jedno na godziny, drugien na minuty
         kcal = int(PhysicalActivities.activities[activity]) * duration / 60
         self.kcal -= kcal
-        self.message = f"Dodano {activity}, trwająca {duration} minut"
+        self.message = f"Dodano {activity}, trwająca {duration} minut. Spaliłeś przy tym około {round(kcal)}kcal"
         self.activities_today.append(f"{get_current_time()} {activity} -{round(kcal)}kcal")
 
     def add_hunger_mark(self):
@@ -169,15 +173,15 @@ class MainPopupWidgets:
     layout = BoxLayout(orientation="vertical", spacing=10, size_hint_y=None)
     layout.bind(minimum_height=layout.setter('height'))
     heading1 = Label(text="Statystyki Użytkowinika", font_size="20dp")
-    body1 = Label(text=f"Dzień: {user.day}\nDzień rozpoczęcia: {user.first_day if user.first_day is not None else 'Brak danych'}\n")
+    body1 = Label(text=f"Dzień: {user.current_day}\nDzień rozpoczęcia: {user.first_day if user.first_day is not None else 'Brak danych'}\n")
     body1a = Label(text=f"Cel: {user.goal}\nWybrana dieta: {user.diet}\n")
     heading2 = Label(text="O aplikacji", font_size="20dp")
-    body2 = Label(text="Wersja: 0.0.8\n\n")
+    body2 = Label(text="Wersja: 0.0.9\n\n")
     heading3 = Label(text="Autorzy", font_size="18dp")
     body3 = Label(text="Architekt/Programista: Dawid Lachowicz\n\nGrafik: Marcel Jarosik")
     for item in [heading1, body1, body1a, heading2, body2, heading3, body3]:
         item.size_hint = (1, None)
-        item.height = 120
+        item.height = "50dp"
         layout.add_widget(item)
     root = ScrollView(size_hint=(1, 1), size=(Window.width, Window.height))
     root.add_widget(layout)
@@ -191,8 +195,16 @@ class MainPopupWidgets:
 
 
 class MyRootBoxLayout(FloatLayout):
-    day = 1
-    day_text = f"Dzień {day}"
+    day = user.current_day if user.current_day else 1
+    day_label = ObjectProperty()
+    def __init__(self, **kwargs):
+        super(MyRootBoxLayout, self).__init__()
+        self.day_label.text = f"Dzień {self.day}"
+        Clock.schedule_interval(self.update_day, 1)
+
+    def update_day(self, td):
+        self.day = user.current_day if user.current_day else 1
+        self.day_label.text = f"Dzień {self.day}"
 
     @staticmethod
     def display_info():
@@ -215,13 +227,13 @@ class GoalScreen(Screen):
 
 class HubPopupWidgets:
     def __init__(self, title, labels_text, parent):
-        root_layout = BoxLayout(orientation="vertical")
+        root_layout = BoxLayout(orientation="vertical", padding="10dp")
         layout = BoxLayout(orientation="vertical", spacing=10, size_hint_y=None)
         layout.bind(minimum_height=layout.setter('height'))
         for item in labels_text:
             label = Label(text=item)
             label.size_hint = (1, None)
-            label.height = 80
+            label.height = "30dp"
             layout.add_widget(label)
         root = ScrollView(size_hint=(1, 1), size=(Window.width, Window.height))
         root.add_widget(layout)
@@ -250,9 +262,6 @@ class DietScreen(Screen):
 
 
 class NutrientSelector(BoxLayout):
-    def __init__(self, **kwargs):
-        super(NutrientSelector, self).__init__(**kwargs)
-        self.selected_nutrients = user.displayed_nutrients
     def check_box(self, nutrient):
         if nutrient in user.displayed_nutrients:
             user.displayed_nutrients.remove(nutrient)
@@ -266,6 +275,8 @@ class NutrientScreen(Screen):
 
     @classmethod
     def display_info(cls):
+        user.setup_complete = True
+        user.first_day = str(datetime.now())[:10]
         cls.popup = HubPopupWidgets("Witaj w Aplikacji!", messages.instructions, NutrientScreen)
         cls.popup.popup.open()
 
@@ -448,7 +459,7 @@ class MealScreen(BoxLayout):
             except KeyError:
                 my_data["Brak więcej danych"] = ""
             else:
-                for nutrient in d:
+                for nutrient in d: # TODO HANDLE MORE POSSIBILITIES
                     if nutrient == "ENERC_KCAL":
                         continue
                     label_ang = data["totalNutrients"][nutrient]["label"]
@@ -519,19 +530,25 @@ class UserHub(Screen):
 
 class WindowManager(ScreenManager):
     def __init__(self, **kwargs):
+        global user
         super(WindowManager, self).__init__(**kwargs)
-        if not path.isfile("user_not.txt"): # TODO CHANGE file name to be correct
+        if not path.isfile("user.json"): # TODO CHANGE file name to be correct
             user = UserProfile()
             self.add_widget(InfoScreen())
-            with open("user.txt", "w") as user_file:
-                pass
+
         else:
-            with open("user.txt") as user_file:
-                if len(user_file.readlines()) != 5:
+            with open("user.json") as user_file:
+                user_stats = json.loads(user_file.read())
+                print(user_stats)
+                if not user_stats["setup_complete"]:
                     user = UserProfile()
+                    self.add_widget(InfoScreen())
                 else:
-                    user = UserProfile()
-            self.add_widget(UserHub())
+                    if (datetime.now() - datetime.strptime(user_stats["first_day"], "%Y-%m-%d")).days !=0:
+                        for item in ["activities_today", "hunger_marks", "nutrients_today"]:
+                            del user_stats[item]
+                    user = UserProfile(**user_stats)
+                    self.add_widget(UserHub())
 
 
 class MainApp(App):

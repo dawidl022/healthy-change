@@ -1,9 +1,11 @@
 <MyRootBoxLayout>:
+    day_label: day_label
     ScreenManager:
         Screen:
             name: "basic"
             Label:
-                text: root.day_text
+                id: day_label
+                text: ""
                 size_hint_y: 0.1
                 pos_hint: {"x": 0, "y": 0.89}
             Button:
@@ -125,7 +127,6 @@
 
 <GoalScreen>
     name: "goal_screen"
-    goal: chose_goal
     GridLayout:
         rows: 2
         Label:
@@ -137,9 +138,8 @@
                 Button:
                     background_normal: "grafika/test.png"
                     text: "Chcę nabrać wagę"
-                    id: chose_goal
                     on_release:
-                        self.text: "max"
+                        root.chose_goal("max")
                         root.manager.current = "diet_screen"
             BoxLayout:
                 orientation: "vertical"
@@ -277,10 +277,10 @@
         TextInput:
             id: food_item_search
             multiline: False
-            size_hint_x: 73
+            size_hint_x: 70
         Button
             text: "Szukaj"
-            size_hint_x: 27
+            size_hint_x: 30
             on_press: self.text = "Przetwarzam.."
             on_release:
                 root.meal_search()
@@ -353,30 +353,37 @@
                     disabled: True
             BoxLayout:
                 Label:
-                    text: "Tłuscz"
+                    text: "Tłuscz (suma)"
                 CheckBox:
-                    text: "Tłuscz"
+                    text: "Tłuscz (suma)"
                     active: True
                     on_active: root.check_box(self.text)
             BoxLayout:
                 Label:
-                    text: "W tym Nasycone KT"
+                    text: "Nasycone Kwasy Tłuszczowe"
                 CheckBox:
-                    text: "W tym Nasycone KT"
+                    text: "Nasycone Kwasy Tłuszczowe"
                     active: True
                     on_active: root.check_box(self.text)
             BoxLayout:
                 Label:
-                    text: "W tym Jedno-nienasycone KT"
+                    text: "Tłuszcze Trans"
                 CheckBox:
-                    text: "W tym Jedno-nienasycone KT"
+                    text: "Tłuszcze Trans"
                     active: True
                     on_active: root.check_box(self.text)
             BoxLayout:
                 Label:
-                    text: "W tym Wielo-nienasycone KT"
+                    text: "Jedno-nienasycone KT"
                 CheckBox:
-                    text: "W tym Wielo-nienasycone KT"
+                    text: "Jedno-nienasycone KT"
+                    active: True
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Wielo-nienasycone KT"
+                CheckBox:
+                    text: "Wielo-nienasycone KT"
                     active: True
                     on_active: root.check_box(self.text)
             BoxLayout:

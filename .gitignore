@@ -2,7 +2,7 @@ config.py
 test.py
 test.kv
 code_gen.py
-user.txt
+user.json
 bin
 __pycache__
 venv

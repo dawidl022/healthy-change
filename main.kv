@@ -27,6 +27,7 @@
     UserInfoScreen:
     GoalScreen:
     DietScreen:
+    NutrientScreen:
     UserHub:
 <InfoScreen>:
     name: "info"
@@ -170,8 +171,7 @@
                 text: "Dieta Vegańska"
                 on_release:
                     root.chose_diet("vegan")
-                    root.manager.current = "hub"
-                    root.display_info()
+                    root.manager.current = "nutrients"
             Button:
                 size_hint_y: 0.5
                 text: "Czytaj więcej o tej diecie"
@@ -184,11 +184,25 @@
                 text: "Bez szczególnego typu"
                 on_release:
                     root.chose_diet("all_allowed")
-                    root.manager.current = "hub"
-                    root.display_info()
+                    root.manager.current = "nutrients"
             Button:
                 size_hint_y: 0.5
                 text: "Czytaj więcej o tej diecie"
+
+<NutrientScreen>:
+    name: "nutrients"
+    size_hint_y: 0.9
+    BoxLayout:
+        orientation: "vertical"
+        NutrientSelector
+        Button:
+            size_hint_y: None
+            height: dp(60)
+            text: "Zaczynamy!"
+            on_release:
+                root.manager.current = "hub"
+                root.display_info()
+
 <UserHub>:
     name: "hub"
     bmi_button: bmi_button
@@ -255,19 +269,22 @@
     Label:
         size_hint_y: None
         height: dp(40)
-        font_size: dp(10)
-        text: "Wyszukaj produkt: <Ilość> <jednostka miary n.p 'miska'> <Nazwa dania, potrawy>\n[Aktualnie wspierany jest tylko język angielski]"
+        font_size: dp(12)
+        text: "Wyszukaj produkt: <Ilość> <jednostka miary n.p 'miska', 'g'> <Nazwa dania, potrawy>"
     BoxLayout:
         size_hint_y: None
         height: dp(40)
         TextInput:
             id: food_item_search
             multiline: False
-            size_hint_x: 75
+            size_hint_x: 73
         Button
             text: "Szukaj"
-            size_hint_x: 25
-            on_release: root.meal_search()
+            size_hint_x: 27
+            on_press: self.text = "Przetwarzam.."
+            on_release:
+                root.meal_search()
+                self.text = "Szukaj"
     BoxLayout:
         orientation: "vertical"
         RecycleView:
@@ -309,6 +326,207 @@
             size_hint_y: None
             height: self.minimum_height
             orientation: 'vertical'
+
+<NutrientSelector>:
+    orientation: "vertical"
+    Label:
+        size_hint_y: None
+        height: dp(40)
+        text: "Wybierz te wartości odżywcze, które chcesz widzieć w informacji o produkcie spożyczym"
+    ScrollView:
+        GridLayout:
+            cols: 2
+            size_hint_y: None
+            height: self.minimum_height
+            row_default_height: dp(60)
+            BoxLayout:
+                Label:
+                    text: "Kalorie (kcal)"
+                CheckBox:
+                    active: True
+                    disabled: True
+            BoxLayout:
+                Label:
+                    text: "Masa"
+                CheckBox:
+                    active: True
+                    disabled: True
+            BoxLayout:
+                Label:
+                    text: "Tłuscz"
+                CheckBox:
+                    text: "Tłuscz"
+                    active: True
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "W tym Nasycone KT"
+                CheckBox:
+                    text: "W tym Nasycone KT"
+                    active: True
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "W tym Jedno-nienasycone KT"
+                CheckBox:
+                    text: "W tym Jedno-nienasycone KT"
+                    active: True
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "W tym Wielo-nienasycone KT"
+                CheckBox:
+                    text: "W tym Wielo-nienasycone KT"
+                    active: True
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Węglowodany"
+                CheckBox:
+                    text: "Węglowodany"
+                    active: True
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Błonnik"
+                CheckBox:
+                    text: "Błonnik"
+                    active: True
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Cukry"
+                CheckBox:
+                    text: "Cukry"
+                    active: True
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Białko"
+                CheckBox:
+                    text: "Białko"
+                    active: True
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Cholesterol"
+                CheckBox:
+                    text: "Cholesterol"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Sód"
+                CheckBox:
+                    text: "Sód"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Wapń"
+                CheckBox:
+                    text: "Wapń"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Magnez"
+                CheckBox:
+                    text: "Magnez"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Potas"
+                CheckBox:
+                    text: "Potas"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Żelazo"
+                CheckBox:
+                    text: "Żelazo"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Cynk"
+                CheckBox:
+                    text: "Cynk"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Fosfor"
+                CheckBox:
+                    text: "Fosfor"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Witamina A"
+                CheckBox:
+                    text: "Witamina A"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Witamina C"
+                CheckBox:
+                    text: "Witamina C"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Tiamina (Witamina B1)"
+                CheckBox:
+                    text: "Tiamina (Witamina B1)"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Ryboflawina (Witamina B2)"
+                CheckBox:
+                    text: "Ryboflawina (Witamina B2)"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Niacyna (Witamina B3)"
+                CheckBox:
+                    text: "Niacyna (Witamina B3)"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Witamina B6"
+                CheckBox:
+                    text: "Witamina B6"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Kwas Foliowy"
+                CheckBox:
+                    text: "Kwas Foliowy"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Witamina B12"
+                CheckBox:
+                    text: "Witamina B12"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Witamina D"
+                CheckBox:
+                    text: "Witamina D"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Witamina E"
+                CheckBox:
+                    text: "Witamina E"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Witamina A"
+                CheckBox:
+                    text: "Witamina A"
+                    on_active: root.check_box(self.text)
+            BoxLayout:
+                Label:
+                    text: "Woda"
+                CheckBox:
+                    text: "Woda"
+                    on_active: root.check_box(self.text)
 
 
 

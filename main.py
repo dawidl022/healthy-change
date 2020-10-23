@@ -21,6 +21,8 @@ from datetime import datetime
 from urllib.parse import quote
 
 import config
+import nutrient_dictionary
+import messages
 from ibm_watson.language_translator_v3 import LanguageTranslatorV3
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 
@@ -40,15 +42,18 @@ def get_current_time():
 
 
 class UserProfile:
-    def __init__(self, goal=None):
-        self.goal = goal
+    def __init__(self, **kwargs):
+        self.goal = None
         self.diet = None
         self.first_day = None  # TODO implement this
+        self.setup_complete = False
         self.day = 1
         self.activities_today = []
         self.kcal = 0
         self.message = None
         self.hunger_marks = []
+        self.displayed_nutrients = nutrient_dictionary.default_nutrients
+        self.nutrients_today = dict()
 
         self.sex = None
         self.mass = None
@@ -56,7 +61,11 @@ class UserProfile:
         self.age = None
         self.bmi = None
         self.bmi_color = (0, 1, 0, .5)
+        Clock.schedule_interval(self.auto_save_user_info, 1)
 
+    def auto_save_user_info(self, dt):
+        with open("user.txt", "w") as save_file:
+            print(self.__dict__, file=save_file)
 
     def add_meal(self, meal, calories):
         self.activities_today.append(f"{get_current_time()} Posiłek: {meal} +{calories}kcal")
@@ -91,17 +100,7 @@ class UserProfile:
         else:
             self.bmi_color = (1, 0, 0, .5)
 
-
-if not path.isfile("user.txt"):
-    user = UserProfile()
-    with open("user.txt", "w") as user_file:
-        pass
-else:
-    with open("user.txt") as user_file:
-        if len(user_file.readlines()) != 5:
-            user = UserProfile(goal="TEST")
-        else:
-            user = UserProfile()
+user = UserProfile() # before app loads
 
 class UserInfoScreen(Screen):
     popup = None
@@ -173,7 +172,7 @@ class MainPopupWidgets:
     body1 = Label(text=f"Dzień: {user.day}\nDzień rozpoczęcia: {user.first_day if user.first_day is not None else 'Brak danych'}\n")
     body1a = Label(text=f"Cel: {user.goal}\nWybrana dieta: {user.diet}\n")
     heading2 = Label(text="O aplikacji", font_size="20dp")
-    body2 = Label(text="Wersja: 0.0.7\n\n")
+    body2 = Label(text="Wersja: 0.0.8\n\n")
     heading3 = Label(text="Autorzy", font_size="18dp")
     body3 = Label(text="Architekt/Programista: Dawid Lachowicz\n\nGrafik: Marcel Jarosik")
     for item in [heading1, body1, body1a, heading2, body2, heading3, body3]:
@@ -241,15 +240,6 @@ class DietScreen(Screen):
     def chose_diet(diet):
         user.diet = diet
 
-    @classmethod
-    def display_info(cls):
-        cls.popup = HubPopupWidgets("Witaj w Aplikacji!", ("Jak korzystać z aplikacji?", "1. Coś tam coś tam"), DietScreen)
-        cls.popup.popup.open()
-
-    @classmethod
-    def close_info(cls):
-        cls.popup.popup.dismiss()
-
     @staticmethod
     def read_vegan():
         browser_open("http://veganworkout.org.pl/co-jesc/")
@@ -258,6 +248,30 @@ class DietScreen(Screen):
     def read_normal():
         browser_open("https://www.poradnikzdrowie.pl/diety-i-zywienie/odchudzanie/jaka-jest-zbilansowana-dieta-optymalna-dla-ciebie-aa-cJ56-67oc-F24F.html")
 
+
+class NutrientSelector(BoxLayout):
+    def __init__(self, **kwargs):
+        super(NutrientSelector, self).__init__(**kwargs)
+        self.selected_nutrients = user.displayed_nutrients
+    def check_box(self, nutrient):
+        if nutrient in user.displayed_nutrients:
+            user.displayed_nutrients.remove(nutrient)
+        else:
+            user.displayed_nutrients.append(nutrient)
+        print(user.displayed_nutrients)
+
+
+
+class NutrientScreen(Screen):
+
+    @classmethod
+    def display_info(cls):
+        cls.popup = HubPopupWidgets("Witaj w Aplikacji!", messages.instructions, NutrientScreen)
+        cls.popup.popup.open()
+
+    @classmethod
+    def close_info(cls):
+        cls.popup.popup.dismiss()
 
 class PhysicalActivities:
     activities = {}
@@ -417,7 +431,6 @@ class MealScreen(BoxLayout):
     def meal_search(self):
         search_url = "https://api.edamam.com/api/nutrition-details"
 
-        # query = json.dumps({"ingr": self.food_item.text})
         translation = language_translator.translate(
             text=self.food_item.text,
             model_id='pl-en').get_result()
@@ -429,9 +442,25 @@ class MealScreen(BoxLayout):
     def print_results(self, request, data):
         print(data)
         if data["calories"] != 0:
-            my_data = {"Kalorie": data["calories"], "Masa (g)": data["totalWeight"]}
+            my_data = {"Kalorie": str(round(data["calories"])) + "kcal", "Masa (g)": round(data["totalWeight"])}
+            try:
+                d = data["totalNutrients"]
+            except KeyError:
+                my_data["Brak więcej danych"] = ""
+            else:
+                for nutrient in d:
+                    if nutrient == "ENERC_KCAL":
+                        continue
+                    label_ang = data["totalNutrients"][nutrient]["label"]
+                    label = nutrient_dictionary.nutrients[label_ang]
+                    if not label:
+                        continue
+                    quantity = data["totalNutrients"][nutrient]["quantity"]
+                    unit = data["totalNutrients"][nutrient]["unit"]
+                    if label in user.displayed_nutrients:
+                        my_data[label] = str(round(quantity, 2)) + unit
             self.calories = data["calories"]
-            self.search_results.data = [{'text': str(categ) + ": " + str(round(value))} for categ, value in my_data.items()]
+            self.search_results.data = [{'text': str(categ) + ": " + str(value)} for categ, value in my_data.items()]
             AddButton.disabled = False
         else:
             self.search_results.data = [{'text': "Nie znaleziono"}]
@@ -468,7 +497,7 @@ class UserHub(Screen):
         Clock.schedule_interval(self.update_activities, 2)
 
     def update_activities(self, td):
-        print(user.bmi)
+        # print(user.bmi)
         self.bmi_button.text = f"BMI: {user.bmi}"
         self.bmi_button.background_color = user.bmi_color
         if len(user.activities_today) == 0:
@@ -489,7 +518,20 @@ class UserHub(Screen):
 
 
 class WindowManager(ScreenManager):
-    pass
+    def __init__(self, **kwargs):
+        super(WindowManager, self).__init__(**kwargs)
+        if not path.isfile("user_not.txt"): # TODO CHANGE file name to be correct
+            user = UserProfile()
+            self.add_widget(InfoScreen())
+            with open("user.txt", "w") as user_file:
+                pass
+        else:
+            with open("user.txt") as user_file:
+                if len(user_file.readlines()) != 5:
+                    user = UserProfile()
+                else:
+                    user = UserProfile()
+            self.add_widget(UserHub())
 
 
 class MainApp(App):

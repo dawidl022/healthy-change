@@ -1,0 +1,7 @@
+config.py
+bin
+__pycache__
+venv
+.buildozer
+.idea
+grafika/test.xcf

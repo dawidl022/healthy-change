@@ -1,0 +1,322 @@
+<MyRootBoxLayout>:
+    ScreenManager:
+        Screen:
+            name: "basic"
+            Label:
+                text: root.day_text
+                size_hint_y: 0.1
+                pos_hint: {"x": 0, "y": 0.89}
+            Button:
+                text: "Info"
+                size_hint_x: 0.2
+                size_hint_y: 0.08
+                pos_hint: {"x": 0.75, "y": 0.9}
+                on_release:
+                    root.display_info()
+
+        Screen:
+            name: "info_page"
+
+    WindowManager:
+
+<WindowManager>
+    size_hint_x: 0.9
+    size_hint_y: 0.9
+    pos_hint: {"x": 0.05, "y": 0.1}
+    InfoScreen:
+    UserInfoScreen:
+    GoalScreen:
+    DietScreen:
+    UserHub:
+<InfoScreen>:
+    name: "info"
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            text: "Witaj w aplikacji coś tam coś tam\n\n"
+            text_size: self.size
+        Button:
+            size_hint_x: 0.4
+            size_hint_y: 0.08
+            text: "Następny ekran"
+            on_release:
+                root.manager.current = "user_info"
+
+<UserInfoScreen>:
+    name: "user_info"
+    _height: _height
+    age: age
+    mass: mass
+    BoxLayout:
+        orientation: "vertical"
+        size_hint_y: 0.9
+        BoxLayout:
+            size_hint_y: 0.5
+            orientation: "vertical"
+            BoxLayout:
+                padding: 5
+                size_hint_y: 0.1
+            BoxLayout:
+                padding: 5
+                size_hint_y: 0.1
+                Label:
+                    size_hint_x: 0.25
+                    text: "Wiek"
+                TextInput:
+                    id: age
+                    size_hint_y: None
+                    height: dp(40)
+                    size_hint_x: 0.75
+            BoxLayout:
+                padding: 5
+                size_hint_y: 0.1
+                Label:
+                    size_hint_x: 0.25
+                    text: "Masa (kg)"
+                TextInput:
+                    id: mass
+                    size_hint_y: None
+                    height: dp(40)
+                    size_hint_x: 0.75
+            BoxLayout:
+                padding: 5
+                size_hint_y: 0.1
+                Label:
+                    size_hint_x: 0.25
+                    text: "Wzrost (cm)"
+                TextInput:
+                    id: _height
+                    size_hint_y: None
+                    height: dp(40)
+                    size_hint_x: 0.75
+            BoxLayout:
+                padding: 5
+                size_hint_y: 0.1
+            BoxLayout:
+                padding: 5
+                size_hint_y: 0.1
+                Label:
+                    text: "Płeć"
+                BoxLayout:
+                    orientation: "vertical"
+                    CheckBox:
+                        group: "sex"
+                        on_active: root.male_check()
+                    Label:
+                        text: "Mężczyzna"
+                BoxLayout:
+                    orientation: "vertical"
+                    CheckBox:
+                        group: "sex"
+                        on_active: root.female_check()
+                    Label:
+                        text: "Kobieta"
+        BoxLayout:
+            size_hint_y: 0.4
+
+            Button:
+                size_hint_x: 0.4
+                size_hint_y: None
+                height: dp(60)
+                text: "Następny ekran"
+                on_release:
+                    if root.check_details(): root.manager.current = "goal_screen"
+
+<GoalScreen>
+    name: "goal_screen"
+    goal: chose_goal
+    GridLayout:
+        rows: 2
+        Label:
+            text: "Na początek, wybierz swój cel"
+        GridLayout:
+            rows: 3
+            BoxLayout:
+                orientation: "vertical"
+                Button:
+                    background_normal: "grafika/test.png"
+                    text: "Chcę nabrać wagę"
+                    id: chose_goal
+                    on_release:
+                        self.text: "max"
+                        root.manager.current = "diet_screen"
+            BoxLayout:
+                orientation: "vertical"
+                Button:
+                    background_normal: "grafika/test.png"
+                    text: "Chcę utrzymać swoją wagę\n ale lepiej się czuć"
+                    on_release:
+                        root.chose_goal("stay")
+                        root.manager.current = "diet_screen"
+            BoxLayout:
+                orientation: "vertical"
+                Button:
+                    background_normal: "grafika/test.png"
+                    text: "Chcę zrzucić wagę"
+                    on_release:
+                        root.chose_goal("min")
+                        root.manager.current = "diet_screen"
+<DietScreen>
+    name: "diet_screen"
+    GridLayout:
+        rows: 3
+        Label:
+            text_size: self.size
+            text: "Teraz wybierz jedną spośród poniższych diet, jakiej chcesz się trzymać\n\n"
+        BoxLayout:
+            orientation: "vertical"
+            Button:
+                background_normal: "grafika/test.png"
+                text: "Dieta Vegańska"
+                on_release:
+                    root.chose_diet("vegan")
+                    root.manager.current = "hub"
+                    root.display_info()
+            Button:
+                size_hint_y: 0.5
+                text: "Czytaj więcej o tej diecie"
+                on_release:
+                    root.read_vegan()
+        BoxLayout:
+            orientation: "vertical"
+            Button:
+                background_normal: "grafika/test.png"
+                text: "Bez szczególnego typu"
+                on_release:
+                    root.chose_diet("all_allowed")
+                    root.manager.current = "hub"
+                    root.display_info()
+            Button:
+                size_hint_y: 0.5
+                text: "Czytaj więcej o tej diecie"
+<UserHub>:
+    name: "hub"
+    bmi_button: bmi_button
+    activities: activities
+    status: status
+    water_status: water_status
+    BoxLayout:
+        size_hint_y: 0.9
+        orientation: "vertical"
+        spacing: 10
+        GridLayout:
+            size_hint_y: 0.2
+            cols: 2
+            BmiButton:
+                id: bmi_button
+                size_hint_y: None
+                height: dp(40)
+                text: "BMI:"
+            Button:
+                size_hint_y: None
+                height: dp(40)
+                text: "Zakutalizuj wagę / wzrost"
+            VisualButton:
+                id: status
+                size_hint_y: None
+                height: dp(40)
+                text: "Bilans Kaloryczny: 0kcal"
+            VisualButton:
+                id: water_status
+                size_hint_y: None
+                height: dp(40)
+                text: "Uwodnienie Organizmu 0%"
+        RecycleView:
+            size_hint_y: 0.7
+            viewclass: 'Label'
+            id: activities
+
+            data: [{"text": "Nic nie dodano jescze."}]
+
+            RecycleBoxLayout:
+                default_size: None, dp(20)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+        Button:
+            text: "Dodaj Czynność"
+            size_hint_y: 0.1
+            on_release: root.home_activity_display()
+
+<Button>:
+    text_size: self.width, None
+    halign: "center"
+<Label>:
+    text_size: self.width, None
+    halign: "center"
+
+<CustomLabel@Label>
+
+<MealScreen>:
+    orientation: "vertical"
+    food_item: food_item_search
+    search_results: search_results_list
+    Label:
+        size_hint_y: None
+        height: dp(40)
+        font_size: dp(10)
+        text: "Wyszukaj produkt: <Ilość> <jednostka miary n.p 'miska'> <Nazwa dania, potrawy>\n[Aktualnie wspierany jest tylko język angielski]"
+    BoxLayout:
+        size_hint_y: None
+        height: dp(40)
+        TextInput:
+            id: food_item_search
+            multiline: False
+            size_hint_x: 75
+        Button
+            text: "Szukaj"
+            size_hint_x: 25
+            on_release: root.meal_search()
+    BoxLayout:
+        orientation: "vertical"
+        RecycleView:
+            size_hint_y: 0.9
+            viewclass: 'FoodButton'
+            id: search_results_list
+
+            data: []
+
+            RecycleBoxLayout:
+                default_size: None, dp(20)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+
+        Image:
+            size_hint_y: 0.1
+            source: 'grafika/badge.png'
+            size: self.texture_size
+        AddButton:
+            size_hint_y:0.1
+            text: "Dodaj Produkt"
+            on_release:
+                root.add_food_to_user()
+                self.disabled = True
+
+<WorkoutRecycleView>
+    workout_list: workout_type_list
+    RecycleView:
+        viewclass: 'ActivityButton'
+        id: workout_type_list
+
+        data: []
+
+        RecycleBoxLayout:
+            default_size: None, dp(50)
+            default_size_hint: 1, None
+            size_hint_y: None
+            height: self.minimum_height
+            orientation: 'vertical'
+
+
+
+<ActivityButton>
+    on_release:
+        root.select_activity(self.text)
+
+<FoodButton@Button>:
+<VisualButton@Button>:
+    disabled: True
+    color: 0.8, 1, 1, 1

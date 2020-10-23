@@ -1,0 +1,33 @@
+Hiking 	
+370
+Light gardening/ yard work 	
+330
+Dancing 	
+330
+Golf (walking and carrying clubs) 	
+330
+Bicycling (less than 10 mph) 	
+290
+Walking (3.5 mph) 	
+280
+Weight training (general light workout) 	
+220
+Stretching 	
+180
+Running/ jogging (5 mph) 	
+590
+Bicycling (more than 10 mph) 	
+590
+Swimming (slow freestyle laps) 	
+510
+Aerobics 	
+480
+Walking (4.5 mph) 	
+460
+Heavy yard work (chopping wood) 	
+440	
+Weight lifting (vigorous effort) 	
+440	
+Basketball (vigorous) 	
+440
+

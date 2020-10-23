@@ -27,7 +27,7 @@ source.include_exts = py,png,kv,txt
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 0.0.6
+version = 0.0.7
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -35,7 +35,7 @@ version = 0.0.6
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = hostpython3==3.7.5,python3==3.7.5,kivy==2.0.0rc3
+requirements = ibm_cloud_sdk_core,ibm-watson,urllib3,chardet,idna,dateutil,pyjwt==1.7.1,requests,cryptography,websocket-client==0.48.0,websocket,six,hostpython3==3.7.5,python3==3.7.5,kivy==2.0.0rc3
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes

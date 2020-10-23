@@ -1,33 +1,33 @@
-Hiking 	
+Wycieczka Piesza
 370
-Light gardening/ yard work 	
-330
-Dancing 	
-330
-Golf (walking and carrying clubs) 	
-330
-Bicycling (less than 10 mph) 	
-290
-Walking (3.5 mph) 	
+Spacer (5.5km/h)
 280
-Weight training (general light workout) 	
-220
-Stretching 	
-180
-Running/ jogging (5 mph) 	
-590
-Bicycling (more than 10 mph) 	
-590
-Swimming (slow freestyle laps) 	
-510
-Aerobics 	
-480
-Walking (4.5 mph) 	
+Szybki chód (7km/h)
 460
-Heavy yard work (chopping wood) 	
-440	
-Weight lifting (vigorous effort) 	
-440	
-Basketball (vigorous) 	
+Lekka praca w ogródku
+330
+Ciężka praca ogrodowa (n.p rąbanie drewna)
+440
+Taniec
+330
+Wolna jazda na rowerze (mniej niż 16 km/h)
+290
+Jazda na rowerze (powyżej 16km/h)
+590
+Lekkie ćwicznia ogólne (ciężarki)
+220
+Podnoszenie ciężarów (intnsywne)
+440
+Rozciąganie
+180
+Bieganie / trucht (8km/h)
+590
+Pływanie (wolny kraul)
+510
+Aerobik
+480
+Golf (chodzenie and noszenie kijów golfowych)
+330
+Koszykówka (intensywnie)
 440
 

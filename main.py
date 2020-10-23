@@ -21,11 +21,23 @@ from datetime import datetime
 from urllib.parse import quote
 
 import config
+from ibm_watson.language_translator_v3 import LanguageTranslatorV3
+from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
+
+authenticator = IAMAuthenticator(f'{config.ibm_api["key"]}')
+language_translator = LanguageTranslatorV3(
+    version='2018-05-01',
+    authenticator=authenticator
+)
+
+language_translator.set_service_url(f'{config.ibm_api["url"]}')
 
 require("2.0.0")
 
+
 def get_current_time():
     return str(datetime.now()).split()[1][:5]
+
 
 class UserProfile:
     def __init__(self, goal=None):
@@ -161,7 +173,7 @@ class MainPopupWidgets:
     body1 = Label(text=f"Dzień: {user.day}\nDzień rozpoczęcia: {user.first_day if user.first_day is not None else 'Brak danych'}\n")
     body1a = Label(text=f"Cel: {user.goal}\nWybrana dieta: {user.diet}\n")
     heading2 = Label(text="O aplikacji", font_size="20dp")
-    body2 = Label(text="Wersja: 0.0.6\n\n")
+    body2 = Label(text="Wersja: 0.0.7\n\n")
     heading3 = Label(text="Autorzy", font_size="18dp")
     body3 = Label(text="Architekt/Programista: Dawid Lachowicz\n\nGrafik: Marcel Jarosik")
     for item in [heading1, body1, body1a, heading2, body2, heading3, body3]:
@@ -356,19 +368,6 @@ class ActivityPopupWidgets:
         layout = BoxLayout(orientation="vertical", spacing=10, size_hint_y=3)
         layout.bind(minimum_height=layout.setter('height'))
         secondary_layout.add_widget(Label(text="Wybierz rodzaj wysiłku sposród poniższych, lub wprowadź własny:", size_hint_y=None, height="40dp"))
-        # grid_layout = GridLayout(cols=3, height=200)
-        # count = 0
-        # print(PhysicalActivities.activities.items())
-        # for activity, kcal_per_hour in PhysicalActivities.activities.items():
-        #     count += 1
-        #     grid_layout.add_widget(Button(text=activity, on_release=lambda *args: self.workout_duration_open(activity), size_hint_y=None, height="100dp"))  # FIXME
-        #     if count == 3:
-        #         layout.add_widget(grid_layout)
-        #         grid_layout = GridLayout(cols=3, height=200)
-        #         count = 0
-        # root = ScrollView(size_hint=(1, 1), size=(Window.width, Window.height))
-        # # layout.add_widget(grid_layout)
-        # root.add_widget(layout)
         workouts = WorkoutRecycleView()
         workouts.show_workouts()
         secondary_layout.add_widget(workouts)
@@ -419,12 +418,13 @@ class MealScreen(BoxLayout):
         search_url = "https://api.edamam.com/api/nutrition-details"
 
         # query = json.dumps({"ingr": self.food_item.text})
-        food = quote(self.food_item.text)
+        translation = language_translator.translate(
+            text=self.food_item.text,
+            model_id='pl-en').get_result()
+        print(translation)
+        translated_food = translation.get("translations")[0].get("translation")
+        food = quote(translated_food)
         kivy_request = UrlRequest("https://api.edamam.com/api/nutrition-data?app_id={}&app_key={}&ingr={}".format(config.api_headers["app_id"], config.api_headers["app_key"], food), self.print_results)
-        # request = requests.get("https://api.edamam.com/api/nutrition-data?app_id={}&app_key={}&ingr={}".format(congig.api_headers["app_id"], config.api_headers["app_key"], food))
-        # print(request)
-        # print(request.text)
-        # request = UrlRequest(search_url, self.print_results, req_body={"ingred": self.food_item}  # TODO SCHOWAĆ TO PÓŹNIEJ!
 
     def print_results(self, request, data):
         print(data)

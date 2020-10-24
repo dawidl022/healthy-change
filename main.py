@@ -16,11 +16,12 @@ from kivy.uix.image import Image
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.recyclelayout import RecycleLayout
 from kivy.core.window import Window
-from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.uix.screenmanager import Screen, ScreenManager, NoTransition
 
 from os import path
 from webbrowser import open as browser_open
-from datetime import datetime, timedelta
+from datetime import datetime
+from time import sleep
 from urllib.parse import quote
 import json
 import requests
@@ -41,6 +42,7 @@ language_translator = LanguageTranslatorV3(
 language_translator.set_service_url(f'{config.ibm_api["url"]}')
 
 require("2.0.0")
+
 
 def get_current_time():
     return str(datetime.now()).split()[1][:5]
@@ -74,7 +76,13 @@ class UserProfile:
         Clock.schedule_interval(self.auto_save_user_info, 2)
 
     def auto_save_user_info(self, td):
+        display_dict = {"min": "Chcę zrzucić wagę", "stay": "Chcę utrzymać swoją wagę ale lepiej się czuć",
+                        "max": "Chcę nabrać wagę", "vegan": "Wegańska", "all_allowed": "Bez ograniczeń"}
         self.current_day = (datetime.now() - datetime.strptime(self.first_day, "%Y-%m-%d")).days + 1 if self.first_day else None
+        if self.first_day and self.current_day:
+            MainPopupWidgets.body1.text = f"Dzień: {self.current_day}\nDzień rozpoczęcia: {self.first_day}\n"
+        if self.goal and self.diet:
+            MainPopupWidgets.body1a.text = f"Cel: {display_dict[self.goal]}\nWybrana dieta: {display_dict[self.diet]}\n"
         with open("user.json", "w") as save_file:
             output_json = json.dumps(self.__dict__, indent=4)
             save_file.write(output_json)
@@ -106,18 +114,22 @@ class UserProfile:
         self.hunger_marks.append(get_current_time())
 
     def calculate_bmi(self):
-        self.bmi = round(self.mass / (self.height / 100) ** 2, 1)
-        if self.bmi < 18.5:
-            self.bmi_color = (0, .1, 1, .5)
-        elif 18.5 <= self.bmi < 25:
-            self.bmi_color = (0, 1, 0, .5)
-        elif 25 <= self.bmi < 30:
-            self.bmi_color = (.9, .5, 0, .5)
+        try:
+            self.bmi = round(self.mass / (self.height / 100) ** 2, 1)
+        except TypeError:
+            pass
         else:
-            self.bmi_color = (1, 0, 0, .5)
+            if self.bmi < 18.5:
+                self.bmi_color = (0, .1, 1, .5)
+            elif 18.5 <= self.bmi < 25:
+                self.bmi_color = (0, 1, 0, .5)
+            elif 25 <= self.bmi < 30:
+                self.bmi_color = (.9, .5, 0, .5)
+            else:
+                self.bmi_color = (1, 0, 0, .5)
 
 
-user = UserProfile() # before app loads
+user = UserProfile()  # before app loads
 
 
 class WakeTimeDropDown(DropDown):
@@ -144,7 +156,6 @@ class WakeTimeDropDown(DropDown):
 
     def on_select(self, hour):
         user.wake_time = hour
-
 
 
 class BedTimeDropDown(DropDown):
@@ -198,7 +209,6 @@ class UserInfoScreen(Screen):
             pass
         else:
             self.dropdown_button_sleep.text = user.bed_time
-
 
     def male_check(self):
         self.is_male = True
@@ -266,20 +276,21 @@ class BmiButton(Button):
 
 
 class MainPopupWidgets:
+    default = "Brak Danych"
     root_layout = BoxLayout(orientation="vertical")
     # TODO transition this to KV file and add ObjectProperties
     layout = BoxLayout(orientation="vertical", spacing=10, size_hint_y=None)
     layout.bind(minimum_height=layout.setter('height'))
     heading1 = Label(text="Statystyki Użytkowinika", font_size="20dp")
-    body1 = Label(text=f"Dzień: {user.current_day}\nDzień rozpoczęcia: {user.first_day if user.first_day is not None else 'Brak danych'}\n")
-    body1a = Label(text=f"Cel: {user.goal}\nWybrana dieta: {user.diet}\n")
+    body1 = Label(text=f"Dzień: {default}\nDzień rozpoczęcia: {default}\n")
+    body1a = Label(text=f"Cel: {default}\nWybrana dieta: {default}\n")
     heading2 = Label(text="O aplikacji", font_size="20dp")
-    body2 = Label(text="Wersja: 0.0.10\n\n")
+    body2 = Label(text="Wersja: 0.0.11\n\n")
     heading3 = Label(text="Autorzy", font_size="18dp")
     body3 = Label(text="Architekt/Programista: Dawid Lachowicz\n\nGrafik: Marcel Jarosik")
     for item in [heading1, body1, body1a, heading2, body2, heading3, body3]:
         item.size_hint = (1, None)
-        item.height = "70dp"
+        item.height = "50dp"
         layout.add_widget(item)
     root = ScrollView(size_hint=(1, 1), size=(Window.width, Window.height))
     root.add_widget(layout)
@@ -295,6 +306,7 @@ class MainPopupWidgets:
 class MyRootBoxLayout(FloatLayout):
     day = user.current_day if user.current_day else 1
     day_label = ObjectProperty()
+
     def __init__(self, **kwargs):
         super(MyRootBoxLayout, self).__init__()
         self.day_label.text = f"Dzień {self.day}"
@@ -356,7 +368,8 @@ class DietScreen(Screen):
 
     @staticmethod
     def read_normal():
-        browser_open("https://www.poradnikzdrowie.pl/diety-i-zywienie/odchudzanie/jaka-jest-zbilansowana-dieta-optymalna-dla-ciebie-aa-cJ56-67oc-F24F.html")
+        browser_open(
+            "https://www.poradnikzdrowie.pl/diety-i-zywienie/odchudzanie/jaka-jest-zbilansowana-dieta-optymalna-dla-ciebie-aa-cJ56-67oc-F24F.html")
 
 
 class ClickableImage(ButtonBehavior, Image):
@@ -372,7 +385,6 @@ class NutrientSelector(BoxLayout):
         print(user.displayed_nutrients)
 
 
-
 class NutrientScreen(Screen):
 
     @classmethod
@@ -385,6 +397,7 @@ class NutrientScreen(Screen):
     @classmethod
     def close_info(cls):
         cls.popup.popup.dismiss()
+
 
 class PhysicalActivities:
     activities = {}
@@ -422,7 +435,7 @@ class DurationPopup:
         box_layout.add_widget(self.duration)
         box_layout.add_widget(Button(text="Dodaj Aktywność", size_hint_y=0.9, on_release=lambda *args: self.btn()))
         self.duration_popup = Popup(title="Wprowadz czas trwania aktywności (w minutach)", content=box_layout,
-              size_hint=(0.8, 0.2))
+                                    size_hint=(0.8, 0.2))
 
     def btn(self):
         try:
@@ -443,14 +456,16 @@ class WaterPopup:
         box_layout.add_widget(self.amount)
         box_layout.add_widget(Button(text="Dodaj", size_hint_y=0.9, on_release=lambda *args: self.btn()))
         self.water_popup = Popup(title="Wprowadz ilość wypitej wody (w ml)", content=box_layout,
-                                    size_hint=(0.8, 0.2))
+                                 size_hint=(0.8, 0.2))
 
     def btn(self):
         user.add_water(self.amount.text)
         ActivityPopupWidgets.close_water_popup()
 
+
 class CustomActivityBoxLayout(BoxLayout):
     pass
+
 
 class CustomActivityPopup:
     def __init__(self):
@@ -476,7 +491,7 @@ class CustomActivityPopup:
         for item in [box_layout1, box_layout2, box_layout3, box_layout4, hint]:
             root_layout.add_widget(item)
         self.popup = Popup(title="Dodaj nową aktywność", content=root_layout,
-                                    size_hint=(0.9, 0.6))
+                           size_hint=(0.9, 0.6))
 
     def btn(self):
         error = False
@@ -502,12 +517,14 @@ class CustomActivityPopup:
             PhysicalActivities.update()
             ActivityPopupWidgets.close_activity_popup()
 
+
 class WorkoutRecycleView(BoxLayout):
     workout_list = ObjectProperty()
 
     def show_workouts(self):
         acts = PhysicalActivities.activities.keys()
         self.workout_list.data = [{"text": str(act)} for act in acts]
+
 
 class ActivityButton(Button):
     def select_activity(self, activity):
@@ -519,6 +536,7 @@ class ActivityPopupWidgets:
     duration_popup = None
     water_popup = None
     custom_activity_popup = None
+
     def __init__(self, title, labels_text, buttons=()):
         self.screen_names = ["workout", "meal", "water", "hunger", "home"]
         root_layout = BoxLayout(orientation="vertical")
@@ -550,7 +568,7 @@ class ActivityPopupWidgets:
         root_layout.add_widget(self.screen_manager)
         root_layout.add_widget(Button(text="Zamknij okno", size_hint_y=0.1,
                                       on_release=lambda *args: UserHub.close_info()))
-        """Workout Screen"""  # TODO check if order is ok
+        """Workout Screen"""
         workout_screen = Screen(name=self.screen_names[0])
         workout_screen.add_widget(self.workout_screen_init())
         self.screen_manager.add_widget(workout_screen)
@@ -569,18 +587,23 @@ class ActivityPopupWidgets:
         secondary_layout = BoxLayout(orientation="vertical")
         layout = BoxLayout(orientation="vertical", spacing=10, size_hint_y=3)
         layout.bind(minimum_height=layout.setter('height'))
-        secondary_layout.add_widget(Label(text="Wybierz rodzaj wysiłku sposród poniższych, lub wprowadź własny:", size_hint_y=None, height="40dp"))
+        secondary_layout.add_widget(
+            Label(text="Wybierz rodzaj wysiłku sposród poniższych, lub wprowadź własny:", size_hint_y=None,
+                  height="40dp"))
         workouts = WorkoutRecycleView()
         workouts.show_workouts()
         secondary_layout.add_widget(workouts)
-        secondary_layout.add_widget(Button(text="Dodaj własny", size_hint_y=None, height="40dp", on_release=self.add_activity))
+        secondary_layout.add_widget(
+            Button(text="Dodaj własny", size_hint_y=None, height="40dp", on_release=self.add_activity))
         return secondary_layout
 
     @classmethod
     def hunger(cls):
         UserHub.close_info()
         user.add_hunger_mark()
-        cls.popup = HubPopupWidgets("Dodano Pomyślnie", ("Odnotowaliśmy twój głód. Jeśli możesz, zjdedz coś, śmiało :)",), ActivityPopupWidgets)
+        cls.popup = HubPopupWidgets("Dodano Pomyślnie",
+                                    ("Odnotowaliśmy twój głód. Jeśli możesz, zjdedz coś, śmiało :)",),
+                                    ActivityPopupWidgets)
         cls.popup.popup.open()
 
     @classmethod
@@ -613,7 +636,6 @@ class ActivityPopupWidgets:
         UserHub.close_info()
         cls.popup = HubPopupWidgets("Dodano Pomyślnie", (user.message,), ActivityPopupWidgets)
         cls.popup.popup.open()
-        # TODO MAKE SUCCESS DIALOG CLOSE PROPERLY AND MAKE IT TAKE Y SIZE AS ARGUMENT
 
     @classmethod
     def add_activity(cls, instance):
@@ -645,7 +667,8 @@ class MealScreen(BoxLayout):
             print(translation)
             translated_food = translation.get("translations")[0].get("translation")
             food = quote(translated_food)
-            kivy_request = UrlRequest("https://api.edamam.com/api/nutrition-data?app_id={}&app_key={}&ingr={}".format(config.api_headers["app_id"], config.api_headers["app_key"], food), self.print_results)
+            kivy_request = UrlRequest("https://api.edamam.com/api/nutrition-data?app_id={}&app_key={}&ingr={}".format(
+                config.api_headers["app_id"], config.api_headers["app_key"], food), self.print_results)
 
     def print_results(self, request, data):
         print(data)
@@ -656,7 +679,7 @@ class MealScreen(BoxLayout):
             except KeyError:
                 my_data["Brak więcej danych"] = ""
             else:
-                for nutrient in d: # TODO HANDLE MORE POSSIBILITIES
+                for nutrient in d:
                     if nutrient == "ENERC_KCAL":
                         continue
                     label_ang = data["totalNutrients"][nutrient]["label"]
@@ -708,7 +731,7 @@ class UserHub(Screen):
         Clock.schedule_interval(self.check_time_popup, 2)
 
     def update_activities(self, td):
-        # print(user.bmi)
+        user.calculate_bmi()
         self.bmi_button.text = f"BMI: {user.bmi}"
         self.bmi_button.background_color = user.bmi_color
         if len(user.activities_today) == 0:
@@ -725,6 +748,7 @@ class UserHub(Screen):
 
     @classmethod
     def close_info(cls):
+        AddButton.disabled = True
         try:
             cls.popup.popup.dismiss()
         except AttributeError:
@@ -739,7 +763,6 @@ class UserHub(Screen):
         if user.setup_complete:
             if user.afternoon_check_time is not None and user.evening_check_time is not None:
                 time = get_current_time().split(":")
-                print(time)
                 if int(time[0]) >= user.evening_check_time and user.mood_checks_left >= 1:
                     cls.popup = MoodCheckPopup()
                     cls.popup.popup.open()
@@ -758,12 +781,19 @@ class UserHub(Screen):
         cls.message_popup = HubPopupWidgets(title, contents, UserHub)
         cls.message_popup.popup.open()
 
+    @classmethod
+    def meal_search(cls):
+        cls.popup = ActivityPopupWidgets("Sprawdź produkt", "")
+        cls.popup.change_screen("meal")
+        cls.popup.popup.open()
+
 
 class MoodCheckPopup:
     def __init__(self):
         self.popup = Popup(title="Jakie jest twoje sampoczucie w tej chwili?",
-                      content=MoodCheckLayout(),
-                      size_hint=(0.9, 0.6))
+                           content=MoodCheckLayout(),
+                           size_hint=(0.9, 0.6))
+
 
 class MoodCheckLayout(BoxLayout):
     def analyze_mood(self, state):  # TODO Here analyze nutrients, exercise etc. and display hints for the remainder
@@ -772,7 +802,8 @@ class MoodCheckLayout(BoxLayout):
         if user.mood_checks_left == 1:  # Afternoon messages
             if state == "great":
                 UserHub.open_message_popup("Świetnie!",
-                                           ("Cieszymy się że się dobrze czujesz.", "Działaj dalej a będziesz nie do powsztymania!"))
+                                           ("Cieszymy się że się dobrze czujesz.",
+                                            "Działaj dalej a będziesz nie do powsztymania!"))
             elif state == "tried":
                 UserHub.open_message_popup("Podpowiedź: Zalecamy odpocząć",
                                            ("Postaraj się położyć wcześniej spać dzisiaj jeśli możesz.",
@@ -780,13 +811,15 @@ class MoodCheckLayout(BoxLayout):
                                             "Jeśli nie jesteś w stanie funkcjonować, zrób sobie 45minutową drzemke zad dnia."))
             else:
                 UserHub.open_message_popup("Podpowiedź: Znajdź przyczynę",
-                                           ("Jeśli za mało spałeś w nocy, spróbuj wziąc nie więcej jak 45min drzemkę jeszcze za dnia",
-                                            "Jeśli wydaje Ci się że spałeś odpowiednio długo, daj ciału się trochę poruszać",
-                                            "Nawet pół godzinny trening może cię rozbudzić :)"))
+                                           (
+                                           "Jeśli za mało spałeś w nocy, spróbuj wziąc nie więcej jak 45min drzemkę jeszcze za dnia",
+                                           "Jeśli wydaje Ci się że spałeś odpowiednio długo, daj ciału się trochę poruszać",
+                                           "Nawet pół godzinny trening może cię rozbudzić :)"))
         else:  # Evening messages
             if state == "great":
                 UserHub.open_message_popup("Świetnie!",
-                                           ("Cieszymy się że się dobrze czujesz.", "Tak dalej trzymaj w kolejnych dniach!"))
+                                           ("Cieszymy się że się dobrze czujesz.",
+                                            "Tak dalej trzymaj w kolejnych dniach!"))
             elif state == "tried":
                 UserHub.open_message_popup("Podpowiedź: Zalecamy odpocząć",
                                            ("Postaraj się położyć spać za niedługo.",
@@ -796,29 +829,92 @@ class MoodCheckLayout(BoxLayout):
                                             "w wyświetlaczach elektronicznych po zachodzie słońca"))
             else:
                 UserHub.open_message_popup("Podpowiedź: Pozwój organizmowi odpocząć",
-                                           ("Odłóź wszystkie urządzenia elektroniczne, odpręź się, i śpij."))
+                                           ("Odłóź wszystkie urządzenia elektroniczne, odpręź się, i śpij.",))
+
+class ConfirmationPopup(Popup):
+    def __init__(self, parent, **kwargs):
+        super(ConfirmationPopup, self).__init__(**kwargs)
+        self.title = "Potwierdzenie"
+        root_layout = BoxLayout(orientation="vertical")
+        root_layout.add_widget(Label(text="Czy napewno?"))
+        layout = BoxLayout()
+        layout.add_widget(Button(text="Tak", on_release=parent.confirmed))  # try removing parenthesis
+        layout.add_widget(Button(text="Nie", on_release=self.dismiss))
+        root_layout.add_widget(layout)
+        self.content = root_layout
+        self.size_hint = (0.9, 0.3)
+
+class SettingsScreen(Screen):
+    new_weight = ObjectProperty()
+    new_height = ObjectProperty()
+    confirmation_popup = None
+
+    def check_changes(self):
+        if self.new_weight.text == "":
+            pass
+        else:
+            try:
+                int(self.new_weight.text)
+            except ValueError:
+                self.new_weight.text = "Wpisz tylko cyfry"
+            else:
+                user.mass = int(self.new_weight.text)
+                self.new_weight.text = "Zapisano zmiany: " + self.new_weight.text
+        if self.new_height.text == "":
+            pass
+        else:
+            try:
+                int(self.new_height.text)
+            except ValueError:
+                self.new_height.text = "Wpisz tylko cyfry"
+            else:
+                user.height = int(self.new_height.text)
+                self.new_height.text = "Zapisano zmiany: " + self.new_height.text
+
+    def clear_input(self):
+        self.new_height.text = ""
+        self.new_weight.text = ""
+
+    @classmethod
+    def confirmation_box(cls):
+        global user
+        user = UserProfile()
+        confirmation_popup = ConfirmationPopup(SettingsScreen)
+        confirmation_popup.open()
+
+    @staticmethod
+    def confirmed(instance):
+        with open("user.json", "w") as clear_file_contents:
+            pass
+        exit()
+
 
 class WindowManager(ScreenManager):
     def __init__(self, **kwargs):
         global user
         super(WindowManager, self).__init__(**kwargs)
-        if not path.isfile("user.json"): # TODO CHANGE file name to be correct
+        if not path.isfile("user.json"):
             user = UserProfile()
             self.add_widget(InfoScreen())
 
         else:
             with open("user.json") as user_file:
-                user_stats = json.loads(user_file.read())
-                print(user_stats)
-                if not user_stats["setup_complete"]:
+                file_contents = user_file.read()
+                if len(file_contents) > 10:
+                    user_stats = json.loads(file_contents)
+                    print(user_stats)
+                    if not user_stats["setup_complete"]:
+                        user = UserProfile()
+                        self.add_widget(InfoScreen())
+                    else:
+                        if (datetime.now() - datetime.strptime(user_stats["first_day"], "%Y-%m-%d")).days != 0:
+                            for item in ["activities_today", "hunger_marks", "nutrients_today"]:
+                                del user_stats[item]
+                        user = UserProfile(**user_stats)
+                        self.add_widget(UserHub())
+                else:
                     user = UserProfile()
                     self.add_widget(InfoScreen())
-                else:
-                    if (datetime.now() - datetime.strptime(user_stats["first_day"], "%Y-%m-%d")).days !=0:
-                        for item in ["activities_today", "hunger_marks", "nutrients_today"]:
-                            del user_stats[item]
-                    user = UserProfile(**user_stats)
-                    self.add_widget(UserHub())
 
 
 class MainApp(App):

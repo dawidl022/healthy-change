@@ -15,22 +15,19 @@
                 pos_hint: {"x": 0.75, "y": 0.9}
                 on_release:
                     root.display_info()
-
-        Screen:
-            name: "info_page"
-
     WindowManager:
 
 <WindowManager>
     size_hint_x: 0.9
-    size_hint_y: 0.9
-    pos_hint: {"x": 0.05, "y": 0.1}
+    size_hint_y: 0.96
+    pos_hint: {"x": 0.05, "y": 0.04}
     InfoScreen:
     UserInfoScreen:
     GoalScreen:
     DietScreen:
     NutrientScreen:
     UserHub:
+    SettingsScreen:
 <InfoScreen>:
     name: "info"
     BoxLayout:
@@ -44,6 +41,7 @@
             text: "Następny ekran"
             on_release:
                 root.manager.current = "user_info"
+                root.manager.transition.direction = "left"
 
 <UserInfoScreen>:
     name: "user_info"
@@ -144,7 +142,6 @@
                         on_release: root.open_bed_time(self)
         BoxLayout:
             size_hint_y: 0.3
-
             Button:
                 size_hint_x: 0.4
                 size_hint_y: None
@@ -152,93 +149,136 @@
                 text: "Następny ekran"
                 on_release:
                     if root.check_details(): root.manager.current = "goal_screen"
+                    root.manager.transition.direction = "left"
+
+        BoxLayout:
+            size_hint_y: 0.1
+            Button:
+                size_hint_y: None
+                height: dp(40)
+                text: "Poprzedni ekran"
+                on_release:
+                    root.manager.transition.direction = "right"
+                    root.manager.current = "info"
+
 
 <GoalScreen>
     name: "goal_screen"
-    GridLayout:
-        rows: 2
-        Label:
-            text: "Na początek, wybierz swój cel"
+    BoxLayout:
+        orientation: "vertical"
         GridLayout:
-            rows: 3
-            BoxLayout:
-                orientation: "vertical"
-                Button:
-                    background_normal: "grafika/test.png"
-                    text: "Chcę nabrać wagę"
-                    on_release:
-                        root.chose_goal("max")
-                        root.manager.current = "diet_screen"
-            BoxLayout:
-                orientation: "vertical"
-                Button:
-                    background_normal: "grafika/test.png"
-                    text: "Chcę utrzymać swoją wagę\n ale lepiej się czuć"
-                    on_release:
-                        root.chose_goal("stay")
-                        root.manager.current = "diet_screen"
-            BoxLayout:
-                orientation: "horizontal"
-                Button:
-                    size_hint_x: 0.6
-                    background_normal: "grafika/test.png"
-                    text: "Chcę zrzucić wagę"
-                    on_release:
-                        root.chose_goal("min")
-                        root.manager.current = "diet_screen"
-                ClickableImage:
-                    size_hint_x: 0.4
-                    source: "grafika/Stopy waga.png"
-                    on_release:
-                        root.chose_goal("min")
-                        root.manager.current = "diet_screen"
+            size_hint_y: 0.9
+            rows: 2
+            Label:
+                text: "Na początek, wybierz swój cel"
+            GridLayout:
+                rows: 3
+                BoxLayout:
+                    orientation: "vertical"
+                    Button:
+                        background_normal: "grafika/test.png"
+                        text: "Chcę nabrać wagę"
+                        on_release:
+                            root.chose_goal("max")
+                            root.manager.current = "diet_screen"
+                            root.manager.transition.direction = "left"
+                BoxLayout:
+                    orientation: "vertical"
+                    Button:
+                        background_normal: "grafika/test.png"
+                        text: "Chcę utrzymać swoją wagę\n ale lepiej się czuć"
+                        on_release:
+                            root.chose_goal("stay")
+                            root.manager.current = "diet_screen"
+                            root.manager.transition.direction = "left"
+                BoxLayout:
+                    orientation: "horizontal"
+                    Button:
+                        size_hint_x: 0.6
+                        background_normal: "grafika/test.png"
+                        text: "Chcę zrzucić wagę"
+                        on_release:
+                            root.chose_goal("min")
+                            root.manager.current = "diet_screen"
+                            root.manager.transition.direction = "left"
+                    ClickableImage:
+                        size_hint_x: 0.4
+                        source: "grafika/Stopy waga.png"
+                        on_release:
+                            root.chose_goal("min")
+                            root.manager.current = "diet_screen"
+                            root.manager.transition.direction = "left"
+        BoxLayout:
+            size_hint_y: 0.1
+            Button:
+                size_hint_y: None
+                height: dp(40)
+                text: "Poprzedni ekran"
+                on_release:
+                    root.manager.transition.direction = "right"
+                    root.manager.current = "user_info"
 <DietScreen>
     name: "diet_screen"
-    GridLayout:
-        rows: 3
-        padding: 10
-        Label:
-            text_size: self.size
-            text: "Teraz wybierz jedną spośród poniższych diet, jakiej chcesz się trzymać\n\n"
-        BoxLayout:
-            padding: dp(5)
+    BoxLayout:
+        orientation: "vertical"
+        GridLayout:
+            size_hint_y: 0.9
+            rows: 3
+            padding: 10
+            Label:
+                text_size: self.size
+                text: "Teraz wybierz jedną spośród poniższych diet, jakiej chcesz się trzymać\n\n"
             BoxLayout:
-                orientation: "vertical"
-                Button:
-                    background_normal: "grafika/test.png"
-                    text: "Dieta Wegańska"
+                padding: dp(5)
+                BoxLayout:
+                    orientation: "vertical"
+                    Button:
+                        background_normal: "grafika/test.png"
+                        text: "Dieta Wegańska"
+                        on_release:
+                            root.chose_diet("vegan")
+                            root.manager.transition.direction = "left"
+                            root.manager.current = "nutrients"
+                    Button:
+                        size_hint_y: 0.5
+                        text: "Czytaj więcej o tej diecie"
+                        on_release:
+                            root.read_vegan()
+                ClickableImage:
+                    source: "grafika/Dieta Weganska.png"
                     on_release:
                         root.chose_diet("vegan")
+                        root.manager.transition.direction = "left"
                         root.manager.current = "nutrients"
-                Button:
-                    size_hint_y: 0.5
-                    text: "Czytaj więcej o tej diecie"
-                    on_release:
-                        root.read_vegan()
-            ClickableImage:
-                source: "grafika/Dieta Weganska.png"
-                on_release:
-                    root.chose_diet("vegan")
-                    root.manager.current = "nutrients"
-        BoxLayout:
-            padding: dp(5)
             BoxLayout:
-                orientation: "vertical"
-                Button:
-                    background_normal: "grafika/test.png"
-                    text: "Bez szczególnego typu/ograniczen"
+                padding: dp(5)
+                BoxLayout:
+                    orientation: "vertical"
+                    Button:
+                        background_normal: "grafika/test.png"
+                        text: "Bez szczególnego typu/ograniczen"
+                        on_release:
+                            root.chose_diet("all_allowed")
+                            root.manager.transition.direction = "left"
+                            root.manager.current = "nutrients"
+                    Button:
+                        size_hint_y: 0.5
+                        text: "Czytaj więcej o tej diecie"
+                ClickableImage:
+                    source: "grafika/Dieta bez ograniczen.png"
                     on_release:
                         root.chose_diet("all_allowed")
+                        root.manager.transition.direction = "left"
                         root.manager.current = "nutrients"
-                Button:
-                    size_hint_y: 0.5
-                    text: "Czytaj więcej o tej diecie"
-            ClickableImage:
-                source: "grafika/Dieta bez ograniczen.png"
+        BoxLayout:
+            size_hint_y: 0.1
+            Button:
+                size_hint_y: None
+                height: dp(40)
+                text: "Poprzedni ekran"
                 on_release:
-                    root.chose_diet("all_allowed")
-                    root.manager.current = "nutrients"
-
+                    root.manager.transition.direction = "right"
+                    root.manager.current = "goal_screen"
 
 <NutrientScreen>:
     name: "nutrients"
@@ -253,6 +293,7 @@
             on_release:
                 root.manager.current = "hub"
                 root.display_info()
+                root.manager.transition.direction = "left"
 
 <UserHub>:
     name: "hub"
@@ -265,27 +306,42 @@
         orientation: "vertical"
         spacing: 10
         GridLayout:
-            size_hint_y: 0.2
-            cols: 2
-            BmiButton:
-                id: bmi_button
-                size_hint_y: None
-                height: dp(40)
-                text: "BMI:"
-            Button:
-                size_hint_y: None
-                height: dp(40)
-                text: "Zakutalizuj wagę / wzrost"
-            VisualButton:
-                id: status
-                size_hint_y: None
-                height: dp(40)
-                text: "Bilans Kaloryczny: 0kcal"
-            VisualButton:
-                id: water_status
-                size_hint_y: None
-                height: dp(40)
-                text: "Nawodnienie Organizmu 0%"
+            size_hint_y: 0.26
+            rows: 3
+            GridLayout:
+#                size_hint_y: 0.2
+                cols: 2
+                BmiButton:
+                    id: bmi_button
+                    size_hint_y: None
+                    height: dp(40)
+                    text: "BMI:"
+                Button:
+                    size_hint_y: None
+                    height: dp(40)
+                    text: "Zakutalizuj wagę / wzrost i ustawienia" # If doesn't fit rename to "Ustawienia"
+                    on_release:
+                        root.manager.current = "settings"
+                        root.manager.transition.direction = "left"
+            GridLayout:
+#                size_hint_y: 0.2
+                cols: 2
+                VisualButton:
+                    id: status
+                    size_hint_y: None
+                    height: dp(40)
+                    text: "Bilans Kaloryczny: 0kcal"
+                VisualButton:
+                    id: water_status
+                    size_hint_y: None
+                    height: dp(40)
+                    text: "Nawodnienie Organizmu 0%"
+            BoxLayout:
+                Button:
+                    text: "Pełne statystyki dnia"
+                Button:
+                    text: "Sprawdź produkt"
+                    on_release: root.meal_search()
         RecycleView:
             size_hint_y: 0.7
             viewclass: 'Label'
@@ -621,6 +677,71 @@
                 size_hint_x: 0.3
                 source: "grafika/Twarz spiaca.png"
 
+<SettingsScreen>:
+    name: "settings"
+    new_weight: new_weight
+    new_height: new_height
+    size_hint_y: 0.9
+    BoxLayout:
+        orientation: "vertical"
+        BoxLayout:
+            padding: [0, 10, 0, 0]
+            size_hint_y: 0.3
+            orientation: "vertical"
+            BoxLayout:
+                Label:
+                    size_hint_x: 0.5
+                    text: "Nowa waga (kg)"
+                TextInput:
+                    size_hint_x: 0.5
+                    id: new_weight
+            BoxLayout:
+                Label:
+                    size_hint_x: 0.5
+                    text: "Nowy wzrost (cm)"
+                TextInput:
+                    size_hint_x: 0.5
+                    id: new_height
+            Button:
+                text: "Zapisz Zmiany"
+                on_release:
+                    root.check_changes()
+        BoxLayout:
+            size_hint_y: 0.2
+            Button:
+                size_hint_y: None
+                height: dp(80)
+                text: "Zmień wyświetlane wartości odżywcze oraz wyświetl jak korzystać z aplikacji"
+                on_release:
+                    root.manager.current = "nutrients"
+        BoxLayout:
+            size_hint_y: 0.5
+            orientation: "vertical"
+            Label:
+                text: "UWAGA!"
+            Label:
+                text: "Poniższy przycisk służy do wykasowania wszystkich danych wprowadzonych do aplikacji"
+            Label:
+                text: "Konieczne jest ponowne uruchomienie aplikacje po zresetowaniu."
+                font_size: dp(12)
+            Button:
+                text: "Resetuj postępy i zazcznij od nowa"
+                height: dp(60)
+                pos_hint_y: 1
+                size_hint_y: None
+                background_color: (1, 0, 0, 1)
+                on_release:
+                    root.confirmation_box()
+        BoxLayout:
+            size_hint_y: 0.1
+        BoxLayout:
+            size_hint_y: 0.2
+            Button:
+                text: "Powrót"
+                on_release:
+                    root.manager.current = "hub"
+                    root.manager.transition.direction = "right"
+                    root.clear_input()
 
 <ActivityButton>
     on_release:

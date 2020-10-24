@@ -50,11 +50,13 @@
     _height: _height
     age: age
     mass: mass
+    dropdown_button_wake: dropdown_button_wake
+    dropdown_button_sleep: dropdown_button_sleep
     BoxLayout:
         orientation: "vertical"
         size_hint_y: 0.9
         BoxLayout:
-            size_hint_y: 0.5
+            size_hint_y: 0.8
             orientation: "vertical"
             BoxLayout:
                 padding: 5
@@ -94,10 +96,10 @@
                     size_hint_x: 0.75
             BoxLayout:
                 padding: 5
-                size_hint_y: 0.1
+                size_hint_y: 0.05
             BoxLayout:
                 padding: 5
-                size_hint_y: 0.1
+                size_hint_y: 0.15
                 Label:
                     text: "Płeć"
                 BoxLayout:
@@ -114,8 +116,34 @@
                         on_active: root.female_check()
                     Label:
                         text: "Kobieta"
+            BoxLayout:
+                padding: 5
+                size_hint_y: 0.05
+            BoxLayout:
+                size_hint_y: 0.2
+                Image:
+                    size_hint_x: 0.3
+                    source: "grafika/Zegar.png"
+                BoxLayout:
+                    size_hint_x: 0.35
+                    orientation: "vertical"
+                    Label:
+                        text: "Wstajesz:"
+                    Label:
+                        text: "Kładziesz się spać: "
+                BoxLayout:
+                    orientation: "vertical"
+                    size_hint_x: 0.35
+                    Button:
+                        id: dropdown_button_wake
+                        text: "Wybór godziny"
+                        on_release: root.open_wake_time(self)
+                    Button:
+                        id: dropdown_button_sleep
+                        text: "Wybór godziny"
+                        on_release: root.open_bed_time(self)
         BoxLayout:
-            size_hint_y: 0.4
+            size_hint_y: 0.3
 
             Button:
                 size_hint_x: 0.4
@@ -150,10 +178,17 @@
                         root.chose_goal("stay")
                         root.manager.current = "diet_screen"
             BoxLayout:
-                orientation: "vertical"
+                orientation: "horizontal"
                 Button:
+                    size_hint_x: 0.6
                     background_normal: "grafika/test.png"
                     text: "Chcę zrzucić wagę"
+                    on_release:
+                        root.chose_goal("min")
+                        root.manager.current = "diet_screen"
+                ClickableImage:
+                    size_hint_x: 0.4
+                    source: "grafika/Stopy waga.png"
                     on_release:
                         root.chose_goal("min")
                         root.manager.current = "diet_screen"
@@ -161,33 +196,49 @@
     name: "diet_screen"
     GridLayout:
         rows: 3
+        padding: 10
         Label:
             text_size: self.size
             text: "Teraz wybierz jedną spośród poniższych diet, jakiej chcesz się trzymać\n\n"
         BoxLayout:
-            orientation: "vertical"
-            Button:
-                background_normal: "grafika/test.png"
-                text: "Dieta Vegańska"
+            padding: dp(5)
+            BoxLayout:
+                orientation: "vertical"
+                Button:
+                    background_normal: "grafika/test.png"
+                    text: "Dieta Wegańska"
+                    on_release:
+                        root.chose_diet("vegan")
+                        root.manager.current = "nutrients"
+                Button:
+                    size_hint_y: 0.5
+                    text: "Czytaj więcej o tej diecie"
+                    on_release:
+                        root.read_vegan()
+            ClickableImage:
+                source: "grafika/Dieta Weganska.png"
                 on_release:
                     root.chose_diet("vegan")
                     root.manager.current = "nutrients"
-            Button:
-                size_hint_y: 0.5
-                text: "Czytaj więcej o tej diecie"
-                on_release:
-                    root.read_vegan()
         BoxLayout:
-            orientation: "vertical"
-            Button:
-                background_normal: "grafika/test.png"
-                text: "Bez szczególnego typu"
+            padding: dp(5)
+            BoxLayout:
+                orientation: "vertical"
+                Button:
+                    background_normal: "grafika/test.png"
+                    text: "Bez szczególnego typu/ograniczen"
+                    on_release:
+                        root.chose_diet("all_allowed")
+                        root.manager.current = "nutrients"
+                Button:
+                    size_hint_y: 0.5
+                    text: "Czytaj więcej o tej diecie"
+            ClickableImage:
+                source: "grafika/Dieta bez ograniczen.png"
                 on_release:
                     root.chose_diet("all_allowed")
                     root.manager.current = "nutrients"
-            Button:
-                size_hint_y: 0.5
-                text: "Czytaj więcej o tej diecie"
+
 
 <NutrientScreen>:
     name: "nutrients"
@@ -234,13 +285,13 @@
                 id: water_status
                 size_hint_y: None
                 height: dp(40)
-                text: "Uwodnienie Organizmu 0%"
+                text: "Nawodnienie Organizmu 0%"
         RecycleView:
             size_hint_y: 0.7
             viewclass: 'Label'
             id: activities
 
-            data: [{"text": "Nic nie dodano jescze."}]
+            data: [{"text": "Nic nie dodano jescze dzisiaj."}]
 
             RecycleBoxLayout:
                 default_size: None, dp(20)
@@ -266,6 +317,7 @@
     orientation: "vertical"
     food_item: food_item_search
     search_results: search_results_list
+    search_button: search_button
     Label:
         size_hint_y: None
         height: dp(40)
@@ -279,6 +331,7 @@
             multiline: False
             size_hint_x: 70
         Button
+            id: search_button
             text: "Szukaj"
             size_hint_x: 30
             on_press: self.text = "Przetwarzam.."
@@ -535,11 +588,44 @@
                     text: "Woda"
                     on_active: root.check_box(self.text)
 
+<MoodCheckLayout>:
+    orientation: "vertical"
+    padding: 10
+    BoxLayout:
+        orientation: "vertical"
+        BoxLayout:
+            Button:
+                size_hint_x: 0.7
+                text: "Czuję się świetnie, mam dużo energii!"
+                on_release:
+                    root.analyze_mood("great")
+            Image:
+                size_hint_x: 0.3
+                source: "grafika/Twarz usmiechnieta.png"
+        BoxLayout:
+            Button:
+                size_hint_x: 0.7
+                text: "Czuję przemęczenie.."
+                on_release:
+                    root.analyze_mood("tired")
+            Image:
+                size_hint_x: 0.3
+                source: "grafika/Twarz przemeczona.png"
+        BoxLayout:
+            Button:
+                size_hint_x: 0.7
+                text: "Spać.... zzz..."
+                on_release:
+                    root.analyze_mood("sleepy")
+            Image:
+                size_hint_x: 0.3
+                source: "grafika/Twarz spiaca.png"
 
 
 <ActivityButton>
     on_release:
         root.select_activity(self.text)
+
 
 <FoodButton@Button>:
 <VisualButton@Button>:

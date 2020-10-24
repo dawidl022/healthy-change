@@ -27,7 +27,7 @@ source.include_exts = py,png,kv,txt
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 0.0.9
+version = 0.0.10
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -42,10 +42,10 @@ requirements = ibm_cloud_sdk_core,ibm-watson,urllib3,chardet,idna,dateutil,pyjwt
 # requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
-presplash.filename = grafika/test.png
+presplash.filename = grafika/ikonka_logo.png
 
 # (str) Icon of the application
-icon.filename = grafika/test.png
+icon.filename = grafika/ikonka_logo.png
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
 orientation = portrait

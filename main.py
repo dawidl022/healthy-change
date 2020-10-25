@@ -84,6 +84,8 @@ class UserProfile:
         self.drank_today = kwargs.get("drank_today", 0)
         self.save_time = kwargs.get("save_datetime", time.time())
         self.save_date = kwargs.get("save_date", str(datetime.now())[:10])
+        self.resting_metabolic_rate = kwargs.get("resting_metabolic_rate", None)
+        self.resting_kcal_per_second = kwargs.get("resting_kcal_per_second", 0)
         Clock.schedule_interval(self.auto_save_user_info, 2)
 
         for nutrient in nutrient_dictionary.nutrients.values():
@@ -93,7 +95,7 @@ class UserProfile:
         print(self.nutrients_today)
 
     def auto_save_user_info(self, td):
-        display_dict = {"min": "Chcę zrzucić wagę", "stay": "Chcę utrzymać swoją wagę ale lepiej się czuć",
+        display_dict = {"min": "Chcę zrzucić wagę", "stay": "Chcę utrzymać swoją wagę\n       ale lepiej się czuć",
                         "max": "Chcę nabrać wagę", "vegan": "Wegańska", "all_allowed": "Bez ograniczeń"}
         self.save_time = time.time()
         self.save_date = str(datetime.now())[:10]
@@ -119,10 +121,6 @@ class UserProfile:
 
     def add_exercise(self, activity, duration):
         duration = int(duration)
-        print("Adding..")
-        duration_hours = duration // 60
-        duration_minutes = duration % 60
-        # if duration_hours < 1: TODO przeliczyć na godziny i minuty, dodać 2 okna, jedno na godziny, drugien na minuty
         kcal = int(PhysicalActivities.activities[activity]) * duration / 60
         self.kcal -= kcal
         self.kcal_burned_today += kcal
@@ -136,6 +134,7 @@ class UserProfile:
         self.activities_today.append(f"{get_current_time()} {activity} -{round(kcal)}kcal")
         self.kcal -= kcal
         self.kcal_burned_today += kcal
+        duration = int(duration)
         self.exercise_duration_today += duration
         self.water_balance -= (34 / 3) * duration
 
@@ -177,6 +176,16 @@ class UserProfile:
     def calculate_hydration(self):
         try:
             self.hydration = round((self.water_balance * 100) / self.water_needed)
+        except TypeError:
+            pass
+
+    def calculate_rmr(self):
+        try:
+            if self.sex == "M":
+                self.resting_metabolic_rate = ((13.75 * self.mass) + (5 * self.height) - (6.76 * self.age) + 66) * 1.1
+            else:
+                self.resting_metabolic_rate = ((9.56 * self.mass) + (1.85 * self.height) - (6.68 * self.age) + 665) * 1.1
+            self.resting_kcal_per_second = self.resting_metabolic_rate / 86400
         except TypeError:
             pass
 
@@ -338,7 +347,7 @@ class MainPopupWidgets:
     body1 = Label(text=f"Dzień: {default}\nDzień rozpoczęcia: {default}\n")
     body1a = Label(text=f"Cel: {default}\nWybrana dieta: {default}\n")
     heading2 = Label(text="O aplikacji", font_size="20dp")
-    body2 = Label(text="Wersja: 0.0.12\n\n")
+    body2 = Label(text="Wersja: 0.0.13\n\n")
     heading3 = Label(text="Autorzy", font_size="18dp")
     body3 = Label(text="Architekt/Programista: Dawid Lachowicz\n\nGrafik: Marcel Jarosik")
     for item in [heading1, body1, body1a, heading2, body2, heading3, body3]:
@@ -444,6 +453,12 @@ class NutrientScreen(Screen):
     def display_info(cls):
         user.setup_complete = True
         user.first_day = str(datetime.now())[:10]
+        if user.goal == "min":
+            messages.min_options()
+        elif user.goal == "max":
+            messages.max_options()
+        else:
+            messages.stay_options()
         cls.popup = HubPopupWidgets("Witaj w Aplikacji!", messages.instructions, NutrientScreen)
         cls.popup.popup.open()
 
@@ -786,15 +801,17 @@ class UserHub(Screen):
 
     def __init__(self, **kwargs):
         super(UserHub, self).__init__(**kwargs)
-        Clock.schedule_interval(self.update_activities, 2)
+        Clock.schedule_interval(self.update_activities, 1)
         Clock.schedule_interval(self.check_time_popup, 2)
 
     def update_activities(self, td):
         user.calculate_bmi()
         user.calculate_water()
         user.calculate_hydration()
+        user.calculate_rmr()
         try:
             user.water_balance -= user.water_per_second
+            user.kcal -= user.resting_kcal_per_second
         except TypeError:
             pass
         self.bmi_button.text = f"BMI: {user.bmi}"
@@ -803,7 +820,7 @@ class UserHub(Screen):
             self.activities.data = [{"text": "Nic nie dodano jescze dzisiaj."}]
         else:
             self.activities.data = [{"text": str(activity)} for activity in user.activities_today]
-            self.status.text = "Bilans kaloryczny: " + str(round(user.kcal)) + "kcal"
+        self.status.text = "Bilans kaloryczny: " + str(round(user.kcal)) + "kcal"
         self.water_status.text = f"Nawodnienie organizmu: {user.hydration}%"
         if not (user.hydration is None):
             if user.hydration < 0:
@@ -880,7 +897,7 @@ class MoodCheckLayout(BoxLayout):
                 UserHub.open_message_popup("Podpowiedź: Zalecamy odpocząć",
                                            ("Postaraj się położyć wcześniej spać dzisiaj jeśli możesz.",
                                             "Rześkie i zregenerowane ciało i umysł działają najlepiej.",
-                                            "Jeśli nie jesteś w stanie funkcjonować, zrób sobie 45minutową drzemke zad dnia."))
+                                            "Jeśli nie jesteś w stanie funkcjonować, zrób sobie 45minutową drzemke za dnia."))
             else:
                 UserHub.open_message_popup("Podpowiedź: Znajdź przyczynę",
                                            (
@@ -901,7 +918,8 @@ class MoodCheckLayout(BoxLayout):
                                             "w wyświetlaczach elektronicznych po zachodzie słońca"))
             else:
                 UserHub.open_message_popup("Podpowiedź: Pozwój organizmowi odpocząć",
-                                           ("Odłóź wszystkie urządzenia elektroniczne, odpręź się, i śpij.",))
+                                           ("Odłóź wszystkie urządzenia elektroniczne, odpręź się, i śpij.",
+                                            "Poczucie senności godzinę przed pójściem spać jest normalnym zjawiskiem :)"))
 
 class ConfirmationPopup(Popup):
     def __init__(self, parent, **kwargs):
@@ -953,8 +971,6 @@ class SettingsScreen(Screen):
 
     @classmethod
     def confirmation_box(cls):
-        global user
-        user = UserProfile()
         confirmation_popup = ConfirmationPopup(SettingsScreen)
         confirmation_popup.open()
 
@@ -1009,15 +1025,20 @@ class WindowManager(ScreenManager):
                         self.add_widget(InfoScreen())
                     else:
                         if str(datetime.now())[:10] != user_stats["save_date"]:
-                            for item in ["activities_today", "hunger_marks", "nutrients_today", "drank_today", "kcal_today", "kcal_burned_today", "exercise_duration_today"]:
+                            for item in ["activities_today", "hunger_marks", "nutrients_today", "drank_today", "kcal_today", "kcal_burned_today", "exercise_duration_today", "kcal"]:
                                 del user_stats[item]
                         user = UserProfile(**user_stats)
                         if str(datetime.now())[:10] == user_stats["save_date"]:
                             water_balance = (user_stats["water_needed"] / 86400) * (time.time() - user_stats["save_time"])
+                            kcal = user_stats["resting_kcal_per_second"] * (time.time() - user_stats["save_time"])
                         else:
                             water_balance = (user_stats["water_needed"] / 86400) * seconds_past_midnight.seconds
+                            kcal = user_stats["resting_kcal_per_second"] * seconds_past_midnight.seconds
                         print(water_balance)
                         user.water_balance -= water_balance
+                        print("SUBTRACTED", kcal)
+                        user.kcal -= kcal
+                        print(user.kcal)
                         self.add_widget(UserHub())
                 else:
                     user = UserProfile()

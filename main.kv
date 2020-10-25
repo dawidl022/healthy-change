@@ -32,13 +32,26 @@
 <InfoScreen>:
     name: "info"
     BoxLayout:
+        size_hint_y: 0.9
         orientation: "vertical"
+        Image:
+            size_hint_y: 0.4
+            source: "grafika/ikonka_logo.png"
         Label:
-            text: "Witaj w aplikacji coś tam coś tam\n\n"
+            size_hint_y: 0.1
+            text: "Zdrowa Zmiana"
+            font_size: dp(30)
+            font_name: "Roboto-Bold"
+        Label:
+            size_hint_y: 0.1
+            text: "Witaj w aplikacji!"
+            text_size: self.size
+        Label:
+            size_hint_y: 0.1
+            text: "Kliknij poniższy przycisk by rozpocząć\n\n"
             text_size: self.size
         Button:
-            size_hint_x: 0.4
-            size_hint_y: 0.08
+            size_hint_y: 0.1
             text: "Następny ekran"
             on_release:
                 root.manager.current = "user_info"
@@ -166,49 +179,56 @@
 <GoalScreen>
     name: "goal_screen"
     BoxLayout:
+        size_hint_y: 0.9
         orientation: "vertical"
+        Label:
+            size_hint_y: 0.15
+            text: "Na początek, wybierz swój cel"
         GridLayout:
-            size_hint_y: 0.9
-            rows: 2
-            Label:
-                text: "Na początek, wybierz swój cel"
-            GridLayout:
-                rows: 3
-                BoxLayout:
-                    orientation: "vertical"
-                    Button:
-                        background_normal: "grafika/test.png"
-                        text: "Chcę nabrać wagę"
-                        on_release:
-                            root.chose_goal("max")
-                            root.manager.current = "diet_screen"
-                            root.manager.transition.direction = "left"
-                BoxLayout:
-                    orientation: "vertical"
-                    Button:
-                        background_normal: "grafika/test.png"
-                        text: "Chcę utrzymać swoją wagę\n ale lepiej się czuć"
-                        on_release:
-                            root.chose_goal("stay")
-                            root.manager.current = "diet_screen"
-                            root.manager.transition.direction = "left"
-                BoxLayout:
-                    orientation: "horizontal"
-                    Button:
-                        size_hint_x: 0.6
-                        background_normal: "grafika/test.png"
-                        text: "Chcę zrzucić wagę"
-                        on_release:
-                            root.chose_goal("min")
-                            root.manager.current = "diet_screen"
-                            root.manager.transition.direction = "left"
-                    ClickableImage:
-                        size_hint_x: 0.4
-                        source: "grafika/Stopy waga.png"
-                        on_release:
-                            root.chose_goal("min")
-                            root.manager.current = "diet_screen"
-                            root.manager.transition.direction = "left"
+            rows: 3
+            BoxLayout:
+                orientation: "vertical"
+                Button:
+                    background_normal: "grafika/test.png"
+                    text: "Chcę nabrać wagę"
+                    on_release:
+                        root.chose_goal("max")
+                        root.manager.current = "diet_screen"
+                        root.manager.transition.direction = "left"
+            BoxLayout:
+                orientation: "horizontal"
+                Button:
+                    size_hint_x: 0.6
+                    background_normal: "grafika/test.png"
+                    text: "Chcę utrzymać swoją wagę\n ale lepiej się czuć"
+                    on_release:
+                        root.chose_goal("stay")
+                        root.manager.current = "diet_screen"
+                        root.manager.transition.direction = "left"
+                ClickableImage:
+                    size_hint_x: 0.4
+                    source: "grafika/Twarz usmiechnieta.png"
+                    on_release:
+                        root.chose_goal("stay")
+                        root.manager.current = "diet_screen"
+                        root.manager.transition.direction = "left"
+            BoxLayout:
+                orientation: "horizontal"
+                Button:
+                    size_hint_x: 0.6
+                    background_normal: "grafika/test.png"
+                    text: "Chcę zrzucić wagę"
+                    on_release:
+                        root.chose_goal("min")
+                        root.manager.current = "diet_screen"
+                        root.manager.transition.direction = "left"
+                ClickableImage:
+                    size_hint_x: 0.4
+                    source: "grafika/Stopy waga.png"
+                    on_release:
+                        root.chose_goal("min")
+                        root.manager.current = "diet_screen"
+                        root.manager.transition.direction = "left"
         BoxLayout:
             size_hint_y: 0.1
             Button:
@@ -353,7 +373,7 @@
             data: [{"text": "Nic nie dodano jescze dzisiaj."}]
 
             RecycleBoxLayout:
-                default_size: None, dp(20)
+                default_size: None, dp(32)
                 default_size_hint: 1, None
                 size_hint_y: None
                 height: self.minimum_height

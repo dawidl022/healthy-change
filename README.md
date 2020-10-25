@@ -43,7 +43,7 @@ Bilans aktualizuje się po treningu, po posiłku, oraz w stanie spoczynku.
 ##### 4. Wskaźnik nawodnienia organizmu
 Idealnie wskaźnik powinien wynosić około 100%, choć powyżej też oczywiście jest w porządku. Jeśli wynosi poniżej 20%, organizm może wkrótce ulec odwodnieniu.
 Wskaźnik zmienia swoją barwę w przypadku odwodnienia bądź stanu temu bliskiemu.
-Wodę można uzupełnić po prostu pijąc wodę, bądź spożwywając pokarm ją zawierający. Woda jest niustannie tracona przez organizm dlatego należy ją regularnie uzupełniać, szczególnie podczas oraz po wysiłku fizycznym!
+Wodę można uzupełnić po prostu pijąc wodę, bądź spożwywając pokarm ją zawierający. Woda jest nieustannie tracona przez organizm dlatego należy ją regularnie uzupełniać, szczególnie podczas oraz po wysiłku fizycznym!
 
 ##### 5. Pełne statystyki dnia
 Tutaj znajdziesz sumaryczne podsumowanie swojego dnia, wyświetlane są statystyki dotyczące wysiłku fizycznego, spożytej wody, a także każdego poszczególnego składnika spożywczego spożytego w ciągu dnia.

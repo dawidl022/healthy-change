@@ -28,6 +28,7 @@
     NutrientScreen:
     UserHub:
     SettingsScreen:
+    StatisticsScreen:
 <InfoScreen>:
     name: "info"
     BoxLayout:
@@ -335,10 +336,12 @@
                     id: water_status
                     size_hint_y: None
                     height: dp(40)
-                    text: "Nawodnienie Organizmu 0%"
             BoxLayout:
                 Button:
                     text: "Pełne statystyki dnia"
+                    on_release:
+                        root.manager.current = "stats"
+                        root.manager.transition.direction = "left"
                 Button:
                     text: "Sprawdź produkt"
                     on_release: root.meal_search()
@@ -633,9 +636,9 @@
                     on_active: root.check_box(self.text)
             BoxLayout:
                 Label:
-                    text: "Witamina A"
+                    text: "Witamina K"
                 CheckBox:
-                    text: "Witamina A"
+                    text: "Witamina K"
                     on_active: root.check_box(self.text)
             BoxLayout:
                 Label:
@@ -714,6 +717,8 @@
                 text: "Zmień wyświetlane wartości odżywcze oraz wyświetl jak korzystać z aplikacji"
                 on_release:
                     root.manager.current = "nutrients"
+                    root.set_nutrients_default()
+                    root.manager.transition.direction = "left"
         BoxLayout:
             size_hint_y: 0.5
             orientation: "vertical"
@@ -743,10 +748,39 @@
                     root.manager.transition.direction = "right"
                     root.clear_input()
 
+<StatisticsScreen>
+    name: "stats"
+    user_stats: user_stats
+    BoxLayout:
+        size_hint_y: 0.9
+        orientation: "vertical"
+        Label:
+            size_hint_y: 0.1
+            font_size: dp(18)
+            text: "Pełne statystki z dnia dzisiejszego"
+        RecycleView:
+            size_hint_y: 0.8
+            viewclass: 'FoodButton'
+            id: user_stats
+
+            data: []
+
+            RecycleBoxLayout:
+                default_size: None, dp(20)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+        Button:
+            size_hint_y: 0.1
+            text: "Powrót"
+            on_release:
+                root.manager.current = "hub"
+                root.manager.transition.direction = "right"
+
 <ActivityButton>
     on_release:
         root.select_activity(self.text)
-
 
 <FoodButton@Button>:
 <VisualButton@Button>:

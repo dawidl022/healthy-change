@@ -31,3 +31,11 @@ nutrients = {"Fat": "Tłuscz",
              "Water": "Woda"}
 
 default_nutrients = ['Tłuscz', 'Nasycone Kwasy Tłuszczowe', "Tłuszcze Trans", 'Jedno-nienasycone KT', 'Wielo-nienasycone KT', 'Węglowodany', 'Błonnik', 'Cukry', 'Białko']
+
+# TODO Make a loop to get the nutrient units as a dict and store them here
+units = {'Fat': 'g', 'Saturated': 'g', 'Trans': 'g', 'Monounsaturated': 'g', 'Polyunsaturated': 'g', 'Carbs': 'g',
+         'Fiber': 'g', 'Sugars': 'g', 'Protein': 'g', 'Cholesterol': 'mg', 'Sodium': 'mg', 'Calcium': 'mg',
+         'Magnesium': 'mg', 'Potassium': 'mg', 'Iron': 'mg', 'Zinc': 'mg', 'Phosphorus': 'mg', 'Vitamin A': 'µg',
+         'Vitamin C': 'mg', 'Thiamin (B1)': 'mg', 'Riboflavin (B2)': 'mg', 'Niacin (B3)': 'mg', 'Vitamin B6': 'mg',
+         'Folate equivalent (total)': 'µg', 'Folate (food)': 'µg', 'Folic acid': 'µg', 'Vitamin B12': 'µg',
+         'Vitamin D': 'µg', 'Vitamin E': 'mg', 'Vitamin K': 'µg', 'Water': 'g'}

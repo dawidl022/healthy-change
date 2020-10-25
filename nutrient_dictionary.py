@@ -1,4 +1,4 @@
-nutrients = {"Fat": "Tłuscz",
+nutrients = {"Fat": "Tłuszcz",
              "Saturated": "Nasycone Kwasy Tłuszczowe",
              "Trans": "Tłuszcze Trans",
              "Monounsaturated": "Jedno-nienasycone KT",
@@ -30,7 +30,7 @@ nutrients = {"Fat": "Tłuscz",
              "Vitamin K": "Witamina A",
              "Water": "Woda"}
 
-default_nutrients = ['Tłuscz', 'Nasycone Kwasy Tłuszczowe', "Tłuszcze Trans", 'Jedno-nienasycone KT', 'Wielo-nienasycone KT', 'Węglowodany', 'Błonnik', 'Cukry', 'Białko']
+default_nutrients = ['Tłuszcz', 'Nasycone Kwasy Tłuszczowe', "Tłuszcze Trans", 'Jedno-nienasycone KT', 'Wielo-nienasycone KT', 'Węglowodany', 'Błonnik', 'Cukry', 'Białko']
 
 # TODO Make a loop to get the nutrient units as a dict and store them here
 units = {'Fat': 'g', 'Saturated': 'g', 'Trans': 'g', 'Monounsaturated': 'g', 'Polyunsaturated': 'g', 'Carbs': 'g',

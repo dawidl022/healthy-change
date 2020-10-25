@@ -81,6 +81,7 @@ class UserProfile:
         self.water_per_second = kwargs.get("water_per_second", None)
         self.water_balance = kwargs.get("water_balance", None)
         self.hydration = kwargs.get("hydration", None)
+        self.drank_today = kwargs.get("drank_today", 0)
         self.save_time = kwargs.get("save_datetime", time.time())
         self.save_date = kwargs.get("save_date", str(datetime.now())[:10])
         Clock.schedule_interval(self.auto_save_user_info, 2)
@@ -114,6 +115,7 @@ class UserProfile:
         self.message = f"Wypito {amount}ml wody"
         self.activities_today.append(f"{get_current_time()} Woda: {amount}ml")
         self.water_balance += int(amount)
+        self.drank_today += int(amount)
 
     def add_exercise(self, activity, duration):
         duration = int(duration)
@@ -803,6 +805,13 @@ class UserHub(Screen):
             self.activities.data = [{"text": str(activity)} for activity in user.activities_today]
             self.status.text = "Bilans kaloryczny: " + str(round(user.kcal)) + "kcal"
         self.water_status.text = f"Nawodnienie organizmu: {user.hydration}%"
+        if not (user.hydration is None):
+            if user.hydration < 0:
+                self.water_status.color = (1, 0.2, 0.2, 1)
+            elif user.hydration < 20:
+                self.water_status.color = (1, 1, 0.2, 1)
+            else:
+                self.water_status.color = (0.8, 1, 1, 1)
 
     @classmethod
     def home_activity_display(cls):
@@ -938,6 +947,10 @@ class SettingsScreen(Screen):
         self.new_height.text = ""
         self.new_weight.text = ""
 
+    @staticmethod
+    def set_nutrients_default():
+        user.displayed_nutrients = nutrient_dictionary.default_nutrients
+
     @classmethod
     def confirmation_box(cls):
         global user
@@ -950,6 +963,29 @@ class SettingsScreen(Screen):
         with open("user.json", "w") as clear_file_contents:
             pass
         exit()
+
+
+class StatisticsScreen(Screen):
+    user_stats = ObjectProperty()
+
+    def __init__(self, **kwargs):
+        super(StatisticsScreen, self).__init__(**kwargs)
+        Clock.schedule_interval(self.update_stats, 2)
+
+    def update_stats(self, td):
+        display = []
+        exercise_duration = user.exercise_duration_today
+        exercise_duration_hours = exercise_duration // 60
+        exercise_duration_minutes = exercise_duration % 60
+        display += [f"Czaś wysiłku fizycznego: {exercise_duration_hours}:{exercise_duration_minutes}", f"Spalono kcal: {round(user.kcal_burned_today)}", "",
+                    f"Całkowite spożycie wody: {str(round(user.drank_today + user.nutrients_today['Woda']))}ml",
+                    f"Spożycie wody nie licząc jedzenia: {user.drank_today}ml", "", f"Kcal spożyto: {user.kcal_today}",
+                    "Sumaryczne spożycie sładników odżywczych:", ""]
+        displayed_nutrients = user.nutrients_today.items()
+        reverse_label_dict = {label_pol: label_ang for label_ang, label_pol in nutrient_dictionary.nutrients.items()}
+        nutrients_with_units = [nutrient + " " + str(round(data, 2)) + nutrient_dictionary.units[reverse_label_dict[nutrient]] for nutrient, data in displayed_nutrients]
+        display += nutrients_with_units
+        self.user_stats.data = [{"text": item} for item in display]
 
 
 class WindowManager(ScreenManager):
@@ -973,7 +1009,7 @@ class WindowManager(ScreenManager):
                         self.add_widget(InfoScreen())
                     else:
                         if str(datetime.now())[:10] != user_stats["save_date"]:
-                            for item in ["activities_today", "hunger_marks", "nutrients_today"]:
+                            for item in ["activities_today", "hunger_marks", "nutrients_today", "drank_today", "kcal_today", "kcal_burned_today", "exercise_duration_today"]:
                                 del user_stats[item]
                         user = UserProfile(**user_stats)
                         if str(datetime.now())[:10] == user_stats["save_date"]:

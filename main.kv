@@ -1,5 +1,10 @@
 <MyRootBoxLayout>:
     day_label: day_label
+    canvas.before:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'grafika/Background2.png'
     ScreenManager:
         Screen:
             name: "basic"
@@ -187,10 +192,18 @@
         GridLayout:
             rows: 3
             BoxLayout:
-                orientation: "vertical"
+                orientation: "horizontal"
                 Button:
+                    size_hint_x: 0.6
                     background_normal: "grafika/test.png"
                     text: "Chcę nabrać wagę"
+                    on_release:
+                        root.chose_goal("max")
+                        root.manager.current = "diet_screen"
+                        root.manager.transition.direction = "left"
+                ClickableImage:
+                    size_hint_x: 0.4
+                    source: "grafika/Masa.png"
                     on_release:
                         root.chose_goal("max")
                         root.manager.current = "diet_screen"
@@ -485,9 +498,9 @@
                     disabled: True
             BoxLayout:
                 Label:
-                    text: "Tłuscz (suma)"
+                    text: "Tłuszcz (suma)"
                 CheckBox:
-                    text: "Tłuscz (suma)"
+                    text: "Tłuszcz (suma)"
                     active: True
                     on_active: root.check_box(self.text)
             BoxLayout:
@@ -747,7 +760,7 @@
             Label:
                 text: "Poniższy przycisk służy do wykasowania wszystkich danych wprowadzonych do aplikacji"
             Label:
-                text: "Konieczne jest ponowne uruchomienie aplikacje po zresetowaniu."
+                text: "Konieczne jest ponowne uruchomienie aplikacji po zresetowaniu."
                 font_size: dp(12)
             Button:
                 text: "Resetuj postępy i zazcznij od nowa"

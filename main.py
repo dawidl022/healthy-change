@@ -288,22 +288,26 @@ class UserInfoScreen(Screen):
                 errors.append("Proszę uzupełnić pole \"{}\"".format(label))
             else:
                 try:
-                    int(value)
+                    float(value)
                 except ValueError:
                     errors.append("Proszę wpisać w pole \"{}\" tylko liczby".format(label))
+        try:
+            int(self.age.text)
+        except ValueError:
+            errors.append("Wiek może być tylko liczbą całkowitą")
         if not self.is_male and not self.is_female:
             errors.append("Proszę wybrać płeć")
         if self.dropdown_button_sleep.text == "Wybór godziny":
-            errors.append("Wybierz godzinę, o której za zwyczaj kładziesz się spać.")
+            errors.append("Wybierz godzinę, o której zazwyczaj kładziesz się spać.")
         if self.dropdown_button_wake.text == "Wybór godziny":
-            errors.append("Wybierz godzinę, o której za zwyczaj wstajesz rano.")
+            errors.append("Wybierz godzinę, o której zazwyczaj wstajesz rano.")
         if self.dropdown_button_sleep.text == "Wybór godziny" or self.dropdown_button_wake.text == "Wybór godziny":
-            errors.append("Stała godzina wstawiania i zasypiania dobrze wpływa na zdrowie i samopoczucie")
+            errors.append("Stała godzina wstawania i zasypiania dobrze wpływa na zdrowie i samopoczucie")
             errors.append("Nawet jeśli nie masz aktualnie takich godzin, ustal sobie teraz taki cel.")
         if len(errors) == 0:
             user.age = int(self.age.text)
-            user.height = int(self._height.text)
-            user.mass = int(self.mass.text)
+            user.height = float(self._height.text)
+            user.mass = float(self.mass.text)
             user.calculate_bmi()
             if self.is_male:
                 user.sex = "M"
@@ -347,7 +351,7 @@ class MainPopupWidgets:
     body1 = Label(text=f"Dzień: {default}\nDzień rozpoczęcia: {default}\n")
     body1a = Label(text=f"Cel: {default}\nWybrana dieta: {default}\n")
     heading2 = Label(text="O aplikacji", font_size="20dp")
-    body2 = Label(text="Wersja: 0.0.13\n\n")
+    body2 = Label(text="Wersja: 0.1.0\n\n")
     heading3 = Label(text="Autorzy", font_size="18dp")
     body3 = Label(text="Architekt/Programista: Dawid Lachowicz\n\nGrafik: Marcel Jarosik")
     for item in [heading1, body1, body1a, heading2, body2, heading3, body3]:
@@ -548,7 +552,7 @@ class CustomActivityPopup:
         self.activity_duration = TextInput(multiline=False, size_hint_y=0.9, size_hint_x=0.2)
         activity_label = Label(text="Nazwa:", size_hint_x=0.25)
         per_hour_label = Label(text="Ile średnio spalasz kalorii na godzinę przy tej aktywnośći", size_hint_y=0.8)
-        my_time_label = Label(text="Czas trwanie dzisiejszego treningu (w min)", size_hint_y=0.8)
+        my_time_label = Label(text="Czas trwania dzisiejszego treningu (w min)", size_hint_y=0.8)
         box_layout1.add_widget(activity_label)
         box_layout1.add_widget(self.activity)
         box_layout2.add_widget(per_hour_label)
@@ -893,15 +897,17 @@ class MoodCheckLayout(BoxLayout):
                 UserHub.open_message_popup("Świetnie!",
                                            ("Cieszymy się że się dobrze czujesz.",
                                             "Działaj dalej a będziesz nie do powsztymania!"))
-            elif state == "tried":
-                UserHub.open_message_popup("Podpowiedź: Zalecamy odpocząć",
-                                           ("Postaraj się położyć wcześniej spać dzisiaj jeśli możesz.",
+            elif state == "tired":
+                message_body = ["Postaraj się położyć wcześniej spać dzisiaj jeśli możesz.",
                                             "Rześkie i zregenerowane ciało i umysł działają najlepiej.",
-                                            "Jeśli nie jesteś w stanie funkcjonować, zrób sobie 45minutową drzemke za dnia."))
+                                            "Jeśli nie jesteś w stanie funkcjonować, zrób sobie 45minutową drzemke za dnia."]
+                if user.hydration < 50:
+                    message_body.append("Wypij więcej wody po południu, aby złagodzić zmęczenie")
+                UserHub.open_message_popup("Podpowiedź: Zalecamy odpocząć", message_body)
             else:
                 UserHub.open_message_popup("Podpowiedź: Znajdź przyczynę",
                                            (
-                                           "Jeśli za mało spałeś w nocy, spróbuj wziąc nie więcej jak 45min drzemkę jeszcze za dnia",
+                                           "Jeśli za mało spałeś w nocy, spróbuj wziąć nie więcej jak 45min drzemkę jeszcze za dnia",
                                            "Jeśli wydaje Ci się że spałeś odpowiednio długo, daj ciału się trochę poruszać",
                                            "Nawet pół godzinny trening może cię rozbudzić :)"))
         else:  # Evening messages
@@ -909,13 +915,20 @@ class MoodCheckLayout(BoxLayout):
                 UserHub.open_message_popup("Świetnie!",
                                            ("Cieszymy się że się dobrze czujesz.",
                                             "Tak dalej trzymaj w kolejnych dniach!"))
-            elif state == "tried":
-                UserHub.open_message_popup("Podpowiedź: Zalecamy odpocząć",
-                                           ("Postaraj się położyć spać za niedługo.",
+            elif state == "tired":
+                message_body = ["Postaraj się położyć spać za niedługo.",
                                             "Jeśli masz problemy z zasypianien mimo zmęczenią, spróbuj odłożyc wszystkie ekrany elektroniczne,",
                                             "Znajź jakąś książkę, lub spokojną muzykę, lampkę o ciepłej barwie, i odpręż ciałó",
                                             "Pomocne może być także włączenie trybu niskiego poziomu świateł niebieskich",
-                                            "w wyświetlaczach elektronicznych po zachodzie słońca"))
+                                            "w wyświetlaczach elektronicznych po zachodzie słońca"]
+                if user.kcal < 0 and user.diet == "max":
+                    message_body.append("Sprobuj jutro dorzucić dodatkową przekąske n.p jakiś owoc.")
+                elif user.kcal > 0 and user.diet == "min":
+                    message_body.append("Postaraj się jutro zjeść o jedną przekąske mniej")
+                if user.exercise_duration_today < 60:
+                    message_body.append("Poćwicz jutro przynajmiej 1 godzinę, a poczujesz różnice w soim ciele.")
+                UserHub.open_message_popup("Podpowiedź: Zalecamy odpocząć", message_body)
+
             else:
                 UserHub.open_message_popup("Podpowiedź: Pozwój organizmowi odpocząć",
                                            ("Odłóź wszystkie urządzenia elektroniczne, odpręź się, i śpij.",

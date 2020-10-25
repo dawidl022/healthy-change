@@ -62,6 +62,9 @@ class UserProfile:
         self.hunger_marks = kwargs.get("hunger_marks", [])
         self.displayed_nutrients = kwargs.get("displayed_nutrients", nutrient_dictionary.default_nutrients)
         self.nutrients_today = kwargs.get("nutrients_today", dict())
+        self.kcal_today = kwargs.get("kcal_today", 0)
+        self.kcal_burned_today = kwargs.get("kcal_burned_today", 0)
+        self.exercise_duration_today = kwargs.get("exercise_duration_today", 0)
         self.sex = kwargs.get("sex", None)
         self.mass = kwargs.get("mass", None)
         self.height = kwargs.get("height", None)
@@ -82,6 +85,12 @@ class UserProfile:
         self.save_date = kwargs.get("save_date", str(datetime.now())[:10])
         Clock.schedule_interval(self.auto_save_user_info, 2)
 
+        for nutrient in nutrient_dictionary.nutrients.values():
+            if not nutrient:
+                continue
+            self.nutrients_today[nutrient] = self.nutrients_today.get(nutrient, 0)
+        print(self.nutrients_today)
+
     def auto_save_user_info(self, td):
         display_dict = {"min": "Chcę zrzucić wagę", "stay": "Chcę utrzymać swoją wagę ale lepiej się czuć",
                         "max": "Chcę nabrać wagę", "vegan": "Wegańska", "all_allowed": "Bez ograniczeń"}
@@ -99,6 +108,7 @@ class UserProfile:
     def add_meal(self, meal, calories):
         self.activities_today.append(f"{get_current_time()} Posiłek: {meal} +{calories}kcal")
         self.kcal += calories
+        self.kcal_today += calories
 
     def add_water(self, amount):
         self.message = f"Wypito {amount}ml wody"
@@ -113,12 +123,19 @@ class UserProfile:
         # if duration_hours < 1: TODO przeliczyć na godziny i minuty, dodać 2 okna, jedno na godziny, drugien na minuty
         kcal = int(PhysicalActivities.activities[activity]) * duration / 60
         self.kcal -= kcal
+        self.kcal_burned_today += kcal
+        self.exercise_duration_today += duration
         self.message = f"Dodano {activity}, trwająca {duration} minut. Spaliłeś przy tym około {round(kcal)}kcal"
         self.activities_today.append(f"{get_current_time()} {activity} -{round(kcal)}kcal")
+        self.water_balance -= (34 / 3) * duration
 
     def add_custom_exercise(self, activity, duration, kcal):
         self.message = f"Dodano {activity}, trwająca {duration} minut. Spaliłeś przy tym około {round(kcal)}kcal"
         self.activities_today.append(f"{get_current_time()} {activity} -{round(kcal)}kcal")
+        self.kcal -= kcal
+        self.kcal_burned_today += kcal
+        self.exercise_duration_today += duration
+        self.water_balance -= (34 / 3) * duration
 
     def add_hunger_mark(self):
         self.hunger_marks.append(get_current_time())
@@ -705,6 +722,7 @@ class MealScreen(BoxLayout):
                 config.api_headers["app_id"], config.api_headers["app_key"], food), self.print_results)
 
     def print_results(self, request, data):
+        self.food_data = {}
         print(data)
         if data["calories"] != 0:
             my_data = {"Kalorie": str(round(data["calories"])) + "kcal", "Masa (g)": round(data["totalWeight"])}
@@ -722,6 +740,7 @@ class MealScreen(BoxLayout):
                         continue
                     quantity = data["totalNutrients"][nutrient]["quantity"]
                     unit = data["totalNutrients"][nutrient]["unit"]
+                    self.food_data[label] = round(quantity, 2)
                     if label in user.displayed_nutrients:
                         my_data[label] = str(round(quantity, 2)) + unit
             self.calories = data["calories"]
@@ -733,6 +752,10 @@ class MealScreen(BoxLayout):
     def add_food_to_user(self):
         AddButton.disabled = True
         user.add_meal(self.food_item.text, self.calories)
+        for nutrient, value in self.food_data.items():
+            user.nutrients_today[nutrient] = user.nutrients_today.get(nutrient, 0) + value
+        print(self.food_data)
+        user.water_balance += self.food_data["Woda"]
         UserHub.close_info()
         self.open_popup(self.food_item.text, self.calories)
 
@@ -949,7 +972,7 @@ class WindowManager(ScreenManager):
                         user = UserProfile()
                         self.add_widget(InfoScreen())
                     else:
-                        if (datetime.now() - datetime.strptime(user_stats["first_day"], "%Y-%m-%d")).days != 0:
+                        if str(datetime.now())[:10] != user_stats["save_date"]:
                             for item in ["activities_today", "hunger_marks", "nutrients_today"]:
                                 del user_stats[item]
                         user = UserProfile(**user_stats)

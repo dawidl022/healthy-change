@@ -92,7 +92,7 @@ class UserProfile:
             if not nutrient:
                 continue
             self.nutrients_today[nutrient] = self.nutrients_today.get(nutrient, 0)
-        print(self.nutrients_today)
+        # print(self.nutrients_today)
 
     def auto_save_user_info(self, td):
         display_dict = {"min": "Chcę zrzucić wagę", "stay": "Chcę utrzymać swoją wagę\n       ale lepiej się czuć",
@@ -351,7 +351,7 @@ class MainPopupWidgets:
     body1 = Label(text=f"Dzień: {default}\nDzień rozpoczęcia: {default}\n")
     body1a = Label(text=f"Cel: {default}\nWybrana dieta: {default}\n")
     heading2 = Label(text="O aplikacji", font_size="20dp")
-    body2 = Label(text="Wersja: 0.1.0\n\n")
+    body2 = Label(text="Wersja: 0.1.1\n\n")
     heading3 = Label(text="Autorzy", font_size="18dp")
     body3 = Label(text="Architekt/Programista: Dawid Lachowicz\n\nGrafik: Marcel Jarosik")
     for item in [heading1, body1, body1a, heading2, body2, heading3, body3]:
@@ -448,7 +448,7 @@ class NutrientSelector(BoxLayout):
             user.displayed_nutrients.remove(nutrient)
         else:
             user.displayed_nutrients.append(nutrient)
-        print(user.displayed_nutrients)
+        # print(user.displayed_nutrients)
 
 
 class NutrientScreen(Screen):
@@ -496,7 +496,7 @@ class PhysicalActivities:
                     last_line = line
                 else:
                     cls.activities[last_line] = line
-        print(cls.activities)
+        # print(cls.activities)
 
 
 class DurationPopup:
@@ -736,7 +736,7 @@ class MealScreen(BoxLayout):
             self.search_button.disabled = True
             self.search_results.data = [{"text": "Brak połączenia internetowego"}]
         else:
-            print(translation)
+            # print(translation)
             translated_food = translation.get("translations")[0].get("translation")
             food = quote(translated_food)
             kivy_request = UrlRequest("https://api.edamam.com/api/nutrition-data?app_id={}&app_key={}&ingr={}".format(
@@ -744,7 +744,7 @@ class MealScreen(BoxLayout):
 
     def print_results(self, request, data):
         self.food_data = {}
-        print(data)
+        # print(data)
         if data["calories"] != 0:
             my_data = {"Kalorie": str(round(data["calories"])) + "kcal", "Masa (g)": round(data["totalWeight"])}
             try:
@@ -775,7 +775,7 @@ class MealScreen(BoxLayout):
         user.add_meal(self.food_item.text, self.calories)
         for nutrient, value in self.food_data.items():
             user.nutrients_today[nutrient] = user.nutrients_today.get(nutrient, 0) + value
-        print(self.food_data)
+        # print(self.food_data)
         user.water_balance += self.food_data["Woda"]
         UserHub.close_info()
         self.open_popup(self.food_item.text, self.calories)
@@ -934,6 +934,7 @@ class MoodCheckLayout(BoxLayout):
                                            ("Odłóź wszystkie urządzenia elektroniczne, odpręź się, i śpij.",
                                             "Poczucie senności godzinę przed pójściem spać jest normalnym zjawiskiem :)"))
 
+
 class ConfirmationPopup(Popup):
     def __init__(self, parent, **kwargs):
         super(ConfirmationPopup, self).__init__(**kwargs)
@@ -946,6 +947,7 @@ class ConfirmationPopup(Popup):
         root_layout.add_widget(layout)
         self.content = root_layout
         self.size_hint = (0.9, 0.3)
+
 
 class SettingsScreen(Screen):
     new_weight = ObjectProperty()
@@ -1030,9 +1032,9 @@ class WindowManager(ScreenManager):
                 file_contents = user_file.read()
                 if len(file_contents) > 10:
                     user_stats = json.loads(file_contents)
-                    print(user_stats)
+                    # print(user_stats)
                     seconds_past_midnight = datetime.now() - datetime.today().replace(hour=0, minute=0, second=0)
-                    print(seconds_past_midnight.seconds)
+                    # print(seconds_past_midnight.seconds)
                     if not user_stats["setup_complete"]:
                         user = UserProfile()
                         self.add_widget(InfoScreen())
@@ -1047,11 +1049,11 @@ class WindowManager(ScreenManager):
                         else:
                             water_balance = (user_stats["water_needed"] / 86400) * seconds_past_midnight.seconds
                             kcal = user_stats["resting_kcal_per_second"] * seconds_past_midnight.seconds
-                        print(water_balance)
+                        # print(water_balance)
                         user.water_balance -= water_balance
-                        print("SUBTRACTED", kcal)
+                        # print("SUBTRACTED", kcal)
                         user.kcal -= kcal
-                        print(user.kcal)
+                        # print(user.kcal)
                         self.add_widget(UserHub())
                 else:
                     user = UserProfile()

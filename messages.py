@@ -14,7 +14,7 @@ instructions = ["Uwaga! Wszystkie statystyki i podpowiedzi są tylko przybliżen
                 "Wodę można uzupełnić po prostu pijąc wodę, bądź spożwywając pokarm ją zawierający.", "Woda jest niustannie tracona przez organizm dlatego należy ją regularnie uzupełniać",
                 "Szczególnie podczas oraz po wysiłku fizycznym!", "", "5. Pełne statystyki dnia", "Tutaj znajdziesz sumaryczne podsumowanie swojego dnia",
                 "Wyświetlane są statystyki dotyczące wysiłku fizycznego, spożytej wody", "A także każdego poszczególnego składnika spożywczego spożytego w ciągu dnia.",
-                "", "6. Sprawdź produkt", "Tutaj możesz wyszukać praktycznie dowolny produkt spożywczy, stosując się do podanej składni wyszukania",
+                "", "6. Sprawdź produkt (Wymaga połączenia internetowego)", "Tutaj możesz wyszukać praktycznie dowolny produkt spożywczy, stosując się do podanej składni wyszukania",
                 "Ważne jest by koniecznie podać ilość produktu, czy to w sztukach, gramach, czy nawet miskach.",
                 "Po wyszukaniu, wyświetlają się te wartości odżywcze produktu, które wybrałeś wcześniej.",
                 "Jeśli spożyłeś ten produkt, możesz śmiało dodać do \"spożytych dzisiaj posiłków\"", "",

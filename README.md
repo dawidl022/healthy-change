@@ -17,7 +17,7 @@ prompts for the user. All this in a clean, clean and aesthetic interface.
 
 ## Sample screenshots
 
-**Note**: As the application only supports the Polish language at the time of writing, all screenshots are in Polish. To give you an idea the screenshots show, each screenshot comes with a high-level overview of what the screen is displaying.
+**Note**: As the application only supports the Polish language at the time of writing, all screenshots are in Polish. To give you an idea what the screenshots show, each screenshot comes with a high-level overview of what the screen is displaying.
 
 
 |<img src="zrzuty_ekranu/Screenshot1.jpg"></img>|<img src="zrzuty_ekranu/Screenshot2.jpg"></img>|<img src="zrzuty_ekranu/Screenshot3.jpg"></img>|<img src="zrzuty_ekranu/Screenshot4.jpg"></img>|
